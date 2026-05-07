@@ -597,19 +597,15 @@ async function sendGroupMessage(text) {
           var delta = parsed.choices && parsed.choices[0] && parsed.choices[0].delta ? (parsed.choices[0].delta.content || '') : '';
           if (delta) {
             fullContent += delta;
-            if (bubbleObj && bubbleObj.bubbleEl && !renderTimeout) {
-              renderTimeout = setTimeout(function() {
-                var labelText = member.label || (member === qMember ? '提问者' : '');
-                var c = member === qMember ? '#999' : member.color;
-                bubbleObj.bubbleEl.innerHTML = (labelText ? '<div class="bubble-skill-label" style="color:' + c + '">' + labelText + '</div>' : '') + renderMarkdown(fullContent);
-                renderTimeout = null;
-              }, 50);
+            if (bubbleObj && bubbleObj.bubbleEl) {
+              var labelText = member.label || (member === qMember ? '提问者' : '');
+              var c = member === qMember ? '#999' : member.color;
+              bubbleObj.bubbleEl.innerHTML = (labelText ? '<div class="bubble-skill-label" style="color:' + c + '">' + labelText + '</div>' : '') + renderMarkdown(fullContent);
             }
           }
         } catch (e) { /* skip */ }
       }
     }
-    if (renderTimeout) clearTimeout(renderTimeout);
     if (bubbleObj && bubbleObj.bubbleEl) {
       var labelText = member.label || (member === qMember ? '提问者' : '');
       var c = member === qMember ? '#999' : member.color;
