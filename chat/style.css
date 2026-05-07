@@ -878,7 +878,7 @@ html, body {
 }
 
 .disclaimer-modal {
-  max-width: 540px;
+  max-width: 400px;
   border: 1.5px solid #ff6b81;
   box-shadow: 0 0 30px rgba(255, 107, 129, 0.15);
   border-radius: 18px;
@@ -886,23 +886,24 @@ html, body {
 
 .disclaimer-modal .modal-header {
   background: linear-gradient(135deg, #fff0f3, #ffe4e8);
-  padding: 18px 20px;
+  padding: 14px 18px;
   border-radius: 16px 16px 0 0;
   border-bottom: 0.5px solid #ffd0d6;
 }
 
 .disclaimer-modal .modal-header h2 {
   color: #c0392b;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .disclaimer-content {
   font-size: 13px;
   line-height: 1.7;
   color: var(--text-primary);
-  margin-bottom: 16px;
-  max-height: 300px;
+  margin-bottom: 12px;
+  max-height: 280px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding-right: 4px;
 }
 
