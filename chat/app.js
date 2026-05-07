@@ -3,7 +3,7 @@ const API_PROVIDERS = {
   deepseek: {
     label: 'DeepSeek',
     baseUrl: 'https://api.deepseek.com',
-    model: 'deepseek-chat',
+    model: 'deepseek-v4-flash',
     keyPrefix: 'sk-',
     isFree: false,
     desc: '在 <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a> 获取 API Key',
