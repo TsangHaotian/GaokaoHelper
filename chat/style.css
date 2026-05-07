@@ -896,24 +896,26 @@ html, body {
   font-size: 16px;
 }
 
+.disclaimer-body {
+  max-height: 70vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.disclaimer-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.disclaimer-body::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 2px;
+}
+
 .disclaimer-content {
   font-size: 13px;
   line-height: 1.7;
   color: var(--text-primary);
   margin-bottom: 12px;
-  max-height: 280px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-right: 4px;
-}
-
-.disclaimer-content::-webkit-scrollbar {
-  width: 4px;
-}
-
-.disclaimer-content::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 2px;
 }
 
 .disclaimer-content p { margin-bottom: 10px; }
