@@ -152,20 +152,25 @@ function clearMessages() {
   STATE.messages = [];
 }
 
+var WELCOME_TEXTS = {
+  'zhangxuefeng': '老铁来了啊！坐坐坐！\n我是张雪峰，考研名（逝）师，高考志愿填报第一人。\n家里什么条件？孩子考了多少分？什么省的？想学什么？\n把你的问题砸过来，我给你整得明明白白的！',
+  'ZhangXueFeng-skill-main': '来了啊老弟！\n我是张雪峰V2.0，升级版的嘴替。\n有啥问题尽管扔过来，我给你分析得透透的！\n先问一嘴：你啥家庭条件啊？这个必须先搞清楚。',
+};
+
 function addWelcomeMessage() {
   if (!STATE.activeSkill) return;
-  const label = STATE.activeSkill.label;
-  const initial = label.charAt(0).toUpperCase();
-  const skill = STATE.skills.find(s => s.name === STATE.activeSkill.name);
-  const color = skill ? skill.color : '#1a73e8';
+  var label = STATE.activeSkill.label;
+  var initial = label.charAt(0).toUpperCase();
+  var skill = STATE.skills.find(function(s) { return s.name === STATE.activeSkill.name; });
+  var color = skill ? skill.color : '#1a73e8';
+  var text = WELCOME_TEXTS[STATE.activeSkill.name] || (STATE.configured ? '来吧，有什么问题直接问！' : '请先配置 API Key 后开始聊天。');
 
-  const div = document.createElement('div');
+  var div = document.createElement('div');
   div.className = 'message bot';
+  var paragraphs = text.split('\n').map(function(p) { return '<p>' + p + '</p>'; }).join('');
   div.innerHTML =
     '<div class="msg-avatar"><span class="avatar-bot" style="background:' + color + '">' + initial + '</span></div>' +
-    '<div class="bubble">' +
-      '<p>' + (STATE.configured ? '你好！有什么可以帮你的？' : '请先配置 API Key 后开始聊天。') + '</p>' +
-    '</div>';
+    '<div class="bubble">' + paragraphs + '</div>';
   messagesEl.appendChild(div);
 }
 
