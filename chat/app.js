@@ -56,7 +56,12 @@ const closeSettingsBtn = $('closeSettingsBtn');
 const skillListEl      = $('skillList');
 const statusBadge      = $('statusBadge');
 const currentSkillName = $('currentSkillName');
+const menuBtn          = $('menuBtn');
+const dropdownMenu     = $('dropdownMenu');
 const clearBtn         = $('clearBtn');
+const skillInfoName    = $('skillInfoName');
+const skillInfoDesc    = $('skillInfoDesc');
+const repoLink         = $('repoLink');
 
 const AVATAR_COLORS = ['#1a73e8', '#e67e22', '#2ecc71', '#e74c3c', '#9b59b6', '#1abc9c', '#f39c12', '#3498db'];
 
@@ -117,6 +122,8 @@ function selectSkill(name) {
   if (!skill) return;
   STATE.activeSkill = { name: skill.name, label: skill.label, prompt: skill.prompt || '' };
   currentSkillName.textContent = skill.label;
+  skillInfoName.textContent = skill.label;
+  skillInfoDesc.textContent = '来自 skill/' + skill.name + '/SKILL.md';
   // Load saved messages for this skill
   STATE.messages = loadMessages(skill.name);
   renderSkillList();
@@ -410,6 +417,8 @@ async function init() {
     STATE.activeSkill = { name: targetSkill.name, label: targetSkill.label, prompt: targetSkill.prompt || '' };
     STATE.messages = loadMessages(targetSkill.name);
     currentSkillName.textContent = targetSkill.label;
+    skillInfoName.textContent = targetSkill.label;
+    skillInfoDesc.textContent = '来自 skill/' + targetSkill.name + '/SKILL.md';
   }
 
   renderSkillList();
@@ -430,11 +439,29 @@ async function init() {
     setStatus('inactive', '未设置');
   });
 
+  // Menu toggle
+  menuBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    dropdownMenu.classList.toggle('open');
+  });
+
+  // Close menu on outside click
+  document.addEventListener('click', function() {
+    dropdownMenu.classList.remove('open');
+  });
+
   // Clear
   clearBtn.addEventListener('click', function() {
     clearMessages();
     saveMessages();
     addWelcomeMessage();
+    dropdownMenu.classList.remove('open');
+  });
+
+  // Repo link
+  repoLink.addEventListener('click', function() {
+    window.open('https://github.com/TsangHaotian/GaokaoHelper', '_blank');
+    dropdownMenu.classList.remove('open');
   });
 
   // Chat
