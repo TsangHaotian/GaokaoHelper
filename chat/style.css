@@ -901,6 +901,18 @@ html, body {
   line-height: 1.7;
   color: var(--text-primary);
   margin-bottom: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.disclaimer-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.disclaimer-content::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 2px;
 }
 
 .disclaimer-content p { margin-bottom: 10px; }
