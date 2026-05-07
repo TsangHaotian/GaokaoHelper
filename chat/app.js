@@ -95,11 +95,16 @@ const skillRepoLink     = $('skillRepoLink');
 const skillRepoText     = $('skillRepoText');
 const mobileToggle      = $('mobileToggle');
 const sidebar           = document.querySelector('.sidebar');
-const groupSettingsModal = $('groupSettingsModal');
-const closeGroupSettingsBtn = $('closeGroupSettingsBtn');
-const groupMemberList   = $('groupMemberList');
-const groupRoundInput   = $('groupRoundInput');
-const groupQuestionerToggle = $('groupQuestionerToggle');
+const groupDivider1     = $('groupDivider1');
+const groupDivider2     = $('groupDivider2');
+const groupMenuMembers  = $('groupMenuMembers');
+const groupMenuMemberList = $('groupMenuMemberList');
+const groupMenuRoundText = $('groupMenuRoundText');
+const questionerCheckbox = $('questionerCheckbox');
+const roundDisplay      = $('roundDisplay');
+const roundDec          = $('roundDec');
+const roundInc          = $('roundInc');
+const groupMenuQuestionerSetting = $('groupMenuQuestionerSetting');
 
 const AVATAR_COLORS = ['#1a73e8', '#e67e22', '#2ecc71', '#e74c3c', '#9b59b6', '#1abc9c', '#f39c12', '#3498db'];
 
@@ -172,40 +177,30 @@ function renderSkillList() {
   });
 }
 
-// ===== Group Chat Settings =====
-function renderGroupMemberSettings() {
-  groupMemberList.innerHTML = '';
-  var savedNames = loadGroupMembers();
-  STATE.skills.forEach(function(skill) {
-    var checked = savedNames.length > 0 ? savedNames.indexOf(skill.name) !== -1 : true;
-    var label = document.createElement('label');
-    label.className = 'group-member-item';
-    label.innerHTML =
-      '<input type="checkbox" class="group-member-cb" data-name="' + skill.name + '"' + (checked ? ' checked' : '') + '>' +
-      '<span class="group-member-avatar" style="background:' + skill.color + '">' + skill.label.charAt(0).toUpperCase() + '</span>' +
-      '<span class="group-member-label">' + skill.label + '</span>';
-    groupMemberList.appendChild(label);
+// ===== Group Chat Settings (Dropdown) =====
+function updateGroupDropdownVisibility() {
+  var isGroup = STATE.groupChatEnabled;
+  var items = document.querySelectorAll('.group-only');
+  items.forEach(function(el) {
+    if (isGroup) {
+      el.classList.add('visible');
+    } else {
+      el.classList.remove('visible');
+    }
   });
+}
 
-  groupMemberList.querySelectorAll('.group-member-cb').forEach(function(cb) {
-    cb.addEventListener('change', function() {
-      var names = [];
-      groupMemberList.querySelectorAll('.group-member-cb:checked').forEach(function(c) {
-        names.push(c.dataset.name);
-      });
-      STATE.groupMembers = names.map(function(n) {
-        var s = STATE.skills.find(function(sk) { return sk.name === n; });
-        return s ? { name: s.name, label: s.label, prompt: s.prompt, color: s.color } : null;
-      }).filter(function(m) { return m; });
-      saveGroupMembers();
-    });
-  });
+function renderGroupMemberTags() {
+  var members = STATE.groupMembers.length > 0 ? STATE.groupMembers : STATE.skills;
+  groupMenuMemberList.innerHTML = members.map(function(m) {
+    return '<span class="group-menu-member-tag" style="background:' + m.color + '">' + m.label + '</span>';
+  }).join('');
+}
 
-  // Rounds input
-  groupRoundInput.value = STATE.groupRounds;
-
-  // Questioner toggle
-  groupQuestionerToggle.checked = STATE.groupQuestioner;
+function updateGroupMenuText() {
+  groupMenuRoundText.textContent = '讨论轮数：' + STATE.groupRounds;
+  roundDisplay.textContent = STATE.groupRounds;
+  questionerCheckbox.checked = STATE.groupQuestioner;
 }
 
 // ===== Skill Selection =====
@@ -219,9 +214,11 @@ function selectSkill(name) {
     skillInfoName.textContent = 'AI 群聊';
     skillInfoDesc.textContent = '多人同时回答';
     skillRepoLink.style.display = 'none';
-    // Load saved group chat messages
     STATE.messages = loadMessages(GROUP_CHAT_NAME);
     renderSkillList();
+    updateGroupDropdownVisibility();
+    renderGroupMemberTags();
+    updateGroupMenuText();
     updateUIForConfigured(STATE.configured);
     renderAllMessages();
     saveActiveSkill();
@@ -229,6 +226,7 @@ function selectSkill(name) {
   }
 
   STATE.groupChatEnabled = false;
+  updateGroupDropdownVisibility();
   const skill = STATE.skills.find(s => s.name === name);
   if (!skill) return;
   STATE.activeSkill = { name: skill.name, label: skill.label, prompt: skill.prompt || '' };
@@ -766,38 +764,45 @@ async function init() {
   }
 
   renderSkillList();
-  renderGroupMemberSettings();
+  updateGroupDropdownVisibility();
+  renderGroupMemberTags();
+  updateGroupMenuText();
   updateUIForConfigured(STATE.configured);
   renderAllMessages();
 
-  // Settings (normal)
+  // Settings (always opens the normal modal; group settings are in the ... menu)
   settingsBtn.addEventListener('click', function() {
     closeSidebar();
-    if (STATE.groupChatEnabled) {
-      renderGroupMemberSettings();
-      groupSettingsModal.classList.add('open');
-    } else {
-      settingsModal.classList.add('open');
-    }
+    settingsModal.classList.add('open');
   });
   closeSettingsBtn.addEventListener('click', function() { settingsModal.classList.remove('open'); });
   settingsModal.addEventListener('click', function(e) {
     if (e.target === settingsModal) settingsModal.classList.remove('open');
   });
 
-  // Settings (group)
-  function saveGroupSettingsFromUI() {
-    STATE.groupRounds = parseInt(groupRoundInput.value, 10) || 2;
-    if (STATE.groupRounds < 0) STATE.groupRounds = 0;
-    if (STATE.groupRounds > 10) STATE.groupRounds = 10;
-    STATE.groupQuestioner = groupQuestionerToggle.checked;
+  // Group chat settings in dropdown
+  function toggleQuestioner() {
+    STATE.groupQuestioner = questionerCheckbox.checked;
     saveGroupSettings();
+    updateGroupMenuText();
   }
 
-  closeGroupSettingsBtn.addEventListener('click', function() { saveGroupSettingsFromUI(); groupSettingsModal.classList.remove('open'); });
-  groupSettingsModal.addEventListener('click', function(e) {
-    if (e.target === groupSettingsModal) { saveGroupSettingsFromUI(); groupSettingsModal.classList.remove('open'); }
-  });
+  // Sync checkbox on change
+  questionerCheckbox.addEventListener('change', toggleQuestioner);
+
+  var roundChangeTimer = null;
+  function setRounds(val) {
+    if (val < 0) val = 0;
+    if (val > 10) val = 10;
+    STATE.groupRounds = val;
+    saveGroupSettings();
+    updateGroupMenuText();
+    // Keep menu open for further adjustments
+  }
+
+  roundDec.addEventListener('click', function(e) { e.stopPropagation(); setRounds(STATE.groupRounds - 1); });
+  roundInc.addEventListener('click', function(e) { e.stopPropagation(); setRounds(STATE.groupRounds + 1); });
+  groupMenuQuestionerSetting.addEventListener('click', toggleQuestioner);
 
   saveKeyBtn.addEventListener('click', function() { saveApiKey(); if (STATE.configured) settingsModal.classList.remove('open'); });
   editKeyBtn.addEventListener('click', function() {
@@ -811,8 +816,10 @@ async function init() {
     e.stopPropagation();
     dropdownMenu.classList.toggle('open');
   });
-  document.addEventListener('click', function() {
-    dropdownMenu.classList.remove('open');
+  document.addEventListener('click', function(e) {
+    if (!dropdownMenu.contains(e.target) && e.target !== menuBtn) {
+      dropdownMenu.classList.remove('open');
+    }
   });
 
   // Clear

@@ -56,6 +56,28 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
               <span>清空对话</span>
             </div>
+            <div class="dropdown-divider group-only" id="groupDivider1"></div>
+            <div class="dropdown-item group-only" id="groupMenuMembers">
+              <span style="color:var(--text-secondary);font-size:12px;">群聊成员</span>
+            </div>
+            <div class="dropdown-item group-only disabled" id="groupMenuMemberList" style="padding:4px 12px 8px;"></div>
+            <div class="dropdown-divider group-only" id="groupDivider2"></div>
+            <div class="dropdown-item group-only clickable" id="groupMenuRoundSetting">
+              <span id="groupMenuRoundText">讨论轮数：2</span>
+              <div style="display:flex;gap:4px;margin-left:auto;">
+                <button class="btn-round-adjust" id="roundDec">−</button>
+                <span id="roundDisplay" style="min-width:18px;text-align:center;">2</span>
+                <button class="btn-round-adjust" id="roundInc">+</button>
+              </div>
+            </div>
+            <div class="dropdown-item group-only clickable" id="groupMenuQuestionerSetting">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>提问者</span>
+              <label class="toggle-switch" id="questionerToggle">
+                <input type="checkbox" id="questionerCheckbox" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
             <div class="dropdown-divider"></div>
             <div class="dropdown-item disabled" id="skillInfoName"></div>
             <div class="dropdown-item disabled" id="skillInfoDesc"></div>
@@ -120,36 +142,6 @@
     </div>
   </div>
 
-  <!-- 设置弹窗（群聊模式） -->
-  <div class="modal-overlay" id="groupSettingsModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>群聊设置</h2>
-        <button class="modal-close" id="closeGroupSettingsBtn">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="setting-group">
-          <label class="setting-label">选择参与群聊的角色</label>
-          <p class="setting-desc">勾选参与群聊的角色。</p>
-          <div class="group-member-list" id="groupMemberList"></div>
-        </div>
-        <div class="setting-group">
-          <label class="setting-label">AI 自由讨论轮数</label>
-          <p class="setting-desc">用户发送问题后，AI 角色之间自动对话的轮数。设为 0 则只有用户提问 + 各 AI 回答一轮。</p>
-          <div class="setting-input-row">
-            <input type="number" class="api-input" id="groupRoundInput" min="0" max="10" value="2" />
-          </div>
-        </div>
-        <div class="setting-group">
-          <label class="setting-group-check">
-            <input type="checkbox" id="groupQuestionerToggle" checked />
-            <span>启用「提问者」角色</span>
-          </label>
-          <p class="setting-desc">提问者是一个虚拟主持人角色，在对话间歇插入引导性问题，促成 AI 之间的讨论延续。提问者的发言会用斜体灰色标识。</p>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- 首次打开免责弹窗 -->
   <div class="modal-overlay" id="disclaimerModal">
