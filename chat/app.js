@@ -815,6 +815,11 @@ async function init() {
   chatInput.addEventListener('input', autoResize);
   chatInput.addEventListener('keydown', onInputKeydown);
   if (STATE.configured) chatInput.focus();
+
+  // Auto-show settings modal if no API key configured
+  if (!STATE.configured) {
+    setTimeout(function() { settingsModal.classList.add('open'); }, 500);
+  }
 }
 
 // ===== Disclaimer =====
