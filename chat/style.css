@@ -327,7 +327,7 @@ html, body {
 .group-only.visible { display: flex; }
 #groupDivider1.visible { display: block; }
 #groupDivider2.visible { display: block; }
-#groupMenuMembers.visible { display: flex; }
+#groupMenuMembers.visible { display: flex; justify-content: flex-start; }
 
 .normal-only { display: none; }
 .normal-only.visible { display: flex; }
