@@ -68,6 +68,15 @@ html, body {
   gap: 10px;
 }
 
+.version-tag {
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg-hover);
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+}
+
 .brand-logo {
   width: 34px;
   height: 34px;
@@ -182,14 +191,6 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 2px;
-}
-
-.version-tag {
-  text-align: center;
-  font-size: 11px;
-  color: var(--text-muted);
-  padding: 2px 0 4px;
-  letter-spacing: 0.5px;
 }
 
 .sidebar-footer-btn {

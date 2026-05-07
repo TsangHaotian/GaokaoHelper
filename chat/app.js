@@ -15,8 +15,11 @@ function storageKey(name) { return 'chat_' + name; }
 function saveMessages() {
   if (STATE.activeSkill) {
     try {
-      localStorage.setItem(storageKey('msgs_' + STATE.activeSkill.name), JSON.stringify(STATE.messages));
-    } catch (e) { /* localStorage full */ }
+      var key = storageKey('msgs_' + STATE.activeSkill.name);
+      var data = JSON.stringify(STATE.messages);
+      localStorage.setItem(key, data);
+      console.log('Saved', STATE.messages.length, 'messages for', STATE.activeSkill.name);
+    } catch (e) { console.warn('save failed:', e); }
   }
 }
 
