@@ -24,6 +24,14 @@
       </div>
 
       <div class="sidebar-footer">
+        <div class="sidebar-status">
+          <span class="status-dot" id="statusDot"></span>
+          <span class="sidebar-status-text" id="statusBadge">未配置 API</span>
+        </div>
+        <button class="sidebar-btn sidebar-footer-btn" id="mobileToggle" title="切换角色">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <span>角色</span>
+        </button>
         <button class="sidebar-btn sidebar-footer-btn" id="settingsBtn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
@@ -40,7 +48,6 @@
           <h1 id="currentSkillName">请选择角色</h1>
           <p class="chat-header-subtitle">基于 DeepSeek V4 Flash · 角色由 SKILL 定义</p>
         </div>
-        <span class="status-badge" id="statusBadge">● 未配置 API</span>
         <div class="menu-wrap">
           <button class="btn btn-icon" id="menuBtn" title="更多">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>

@@ -55,6 +55,7 @@ const settingsModal    = $('settingsModal');
 const closeSettingsBtn = $('closeSettingsBtn');
 const skillListEl      = $('skillList');
 const statusBadge      = $('statusBadge');
+const statusDotFooter  = $('statusDot');
 const currentSkillName = $('currentSkillName');
 const menuBtn          = $('menuBtn');
 const dropdownMenu     = $('dropdownMenu');
@@ -63,6 +64,8 @@ const skillInfoName    = $('skillInfoName');
 const skillInfoDesc    = $('skillInfoDesc');
 const skillRepoLink    = $('skillRepoLink');
 const skillRepoText    = $('skillRepoText');
+const mobileToggle     = $('mobileToggle');
+const sidebar          = document.querySelector('.sidebar');
 
 const AVATAR_COLORS = ['#1a73e8', '#e67e22', '#2ecc71', '#e74c3c', '#9b59b6', '#1abc9c', '#f39c12', '#3498db'];
 
@@ -235,8 +238,8 @@ function updateUIForConfigured(configured) {
   apiKeyInput.disabled = configured;
   chatInput.disabled = !(configured && STATE.activeSkill);
   sendBtn.disabled = !(configured && STATE.activeSkill);
-  statusBadge.textContent = configured ? '● API 已就绪' : '● 未配置 API';
-  statusBadge.className = 'status-badge' + (configured ? ' active' : '');
+  statusBadge.textContent = configured ? 'API 已就绪' : '未配置 API';
+  statusDotFooter.className = 'status-dot' + (configured ? ' active' : '');
 }
 
 function setStatus(type, text) {
@@ -483,6 +486,31 @@ async function init() {
     saveMessages();
     addWelcomeMessage();
     dropdownMenu.classList.remove('open');
+  });
+
+  // Mobile sidebar toggle
+  mobileToggle.addEventListener('click', function() {
+    sidebar.classList.toggle('open');
+    var backdrop = document.querySelector('.sidebar-backdrop');
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.className = 'sidebar-backdrop';
+      backdrop.addEventListener('click', function() {
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('open');
+      });
+      document.body.appendChild(backdrop);
+    }
+    backdrop.classList.toggle('open', sidebar.classList.contains('open'));
+  });
+
+  // Close sidebar on skill select (mobile)
+  skillListEl.addEventListener('click', function() {
+    if (window.innerWidth <= 768) {
+      sidebar.classList.remove('open');
+      var bd = document.querySelector('.sidebar-backdrop');
+      if (bd) bd.classList.remove('open');
+    }
   });
 
   // Chat
