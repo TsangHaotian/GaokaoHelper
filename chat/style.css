@@ -802,6 +802,25 @@ html, body {
 .btn-send:hover:not(:disabled) { background: var(--accent-hover); }
 .btn-send:disabled { opacity: 0.3; cursor: not-allowed; }
 
+.btn-stop {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 50%;
+  background: #ff3b30;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-stop:hover { background: #d32f2f; }
+.btn-stop svg { width: 16px; height: 16px; }
+
 .btn-primary {
   background: var(--accent);
   color: #fff;

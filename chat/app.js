@@ -133,6 +133,7 @@ const statusText        = $('statusText');
 const messagesEl        = $('messages');
 const chatInput         = $('chatInput');
 const sendBtn           = $('sendBtn');
+const stopBtn           = $('stopBtn');
 const settingsBtn       = $('settingsBtn');
 const settingsModal     = $('settingsModal');
 const closeSettingsBtn  = $('closeSettingsBtn');
@@ -493,7 +494,8 @@ async function sendMessage() {
   saveMessages();
 
   STATE.loading = true;
-  sendBtn.disabled = true;
+  sendBtn.style.display = 'none';
+  stopBtn.style.display = 'flex';
 
   if (STATE.abortController) STATE.abortController.abort();
   STATE.abortController = new AbortController();
@@ -511,6 +513,8 @@ async function sendMessage() {
     }
   } finally {
     STATE.loading = false;
+    sendBtn.style.display = 'flex';
+    stopBtn.style.display = 'none';
     sendBtn.disabled = !STATE.configured;
     STATE.abortController = null;
   }
@@ -955,6 +959,16 @@ async function init() { try {
   });
 
   sendBtn.addEventListener('click', sendMessage);
+  stopBtn.addEventListener('click', function() {
+    if (STATE.abortController) {
+      STATE.abortController.abort();
+      STATE.abortController = null;
+    }
+    STATE.loading = false;
+    sendBtn.style.display = 'flex';
+    stopBtn.style.display = 'none';
+    sendBtn.disabled = !STATE.configured;
+  });
   chatInput.addEventListener('input', autoResize);
   chatInput.addEventListener('keydown', onInputKeydown);
   if (STATE.configured) chatInput.focus();
