@@ -512,6 +512,7 @@ html, body {
 
 /* ===== Modal ===== */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+#disclaimerModal { z-index: 300; }
 .modal-overlay.open { display: flex; }
 
 .modal {
@@ -552,6 +553,110 @@ html, body {
 .status-dot.active { background: var(--success); }
 .status-dot.error { background: var(--danger); }
 .status-text { font-size: 12px; color: var(--text-muted); }
+
+/* ===== Disclaimer ===== */
+#disclaimerModal.modal-overlay {
+  background: rgba(255, 182, 193, 0.25);
+}
+
+.disclaimer-modal {
+  max-width: 540px;
+  border: 2px solid #ff6b81;
+  box-shadow: 0 0 30px rgba(255, 107, 129, 0.15);
+}
+
+.disclaimer-modal .modal-header {
+  background: linear-gradient(135deg, #fff0f3, #ffe4e8);
+  padding: 20px 24px;
+  border-radius: 12px 12px 0 0;
+  border-bottom: 1px solid #ffd0d6;
+}
+
+.disclaimer-modal .modal-header h2 {
+  color: #c0392b;
+  font-size: 20px;
+}
+
+.disclaimer-content {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.disclaimer-content p {
+  margin-bottom: 10px;
+}
+
+.disclaimer-content p:first-child {
+  font-size: 15px;
+  color: #c0392b;
+}
+
+.disclaimer-content ol {
+  padding-left: 20px;
+  margin-bottom: 10px;
+}
+
+.disclaimer-content ol li {
+  margin-bottom: 10px;
+  line-height: 1.7;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #fff8f9;
+  border-left: 3px solid #ffb3ba;
+}
+
+.disclaimer-content ol li:nth-child(3) {
+  background: #fff0f0;
+  border-left-color: #ff4757;
+  font-weight: 600;
+  color: #c0392b;
+}
+
+.disclaimer-content ol li:nth-child(3) strong {
+  color: #e74c3c;
+  font-size: 14px;
+}
+
+.disclaimer-content ol li strong {
+  color: #e74c3c;
+}
+
+.disclaimer-emph {
+  font-weight: 700;
+  text-align: center;
+  color: #e74c3c;
+  font-size: 14px;
+  padding: 8px;
+  background: #fff0f0;
+  border-radius: 6px;
+}
+
+.disclaimer-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid #ffd0d6;
+}
+
+.disclaimer-actions .btn {
+  min-width: 120px;
+  text-align: center;
+}
+
+.disclaimer-actions .btn-primary {
+  background: #ff4757;
+}
+
+.disclaimer-actions .btn-primary:hover {
+  background: #e8343e;
+}
+
+.disclaimer-actions .btn-primary:disabled {
+  background: #ffb3ba;
+}
 
 /* ===== Markdown ===== */
 .bubble strong { color: var(--text-primary); }

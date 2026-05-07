@@ -529,4 +529,43 @@ async function init() {
   if (STATE.configured) chatInput.focus();
 }
 
-init();
+// ===== Disclaimer =====
+var disclaimerModal = document.getElementById('disclaimerModal');
+var disclaimerAccept = document.getElementById('disclaimerAccept');
+var disclaimerReject = document.getElementById('disclaimerReject');
+var disclaimerCountdown = document.getElementById('disclaimerCountdown');
+
+function checkDisclaimer() {
+  if (localStorage.getItem('disclaimer_accepted')) {
+    init();
+    return;
+  }
+  disclaimerModal.classList.add('open');
+  var seconds = 10;
+  disclaimerAccept.disabled = true;
+  disclaimerCountdown.textContent = seconds;
+  var timer = setInterval(function() {
+    seconds--;
+    disclaimerCountdown.textContent = seconds;
+    if (seconds <= 0) {
+      clearInterval(timer);
+      disclaimerAccept.disabled = false;
+      disclaimerCountdown.textContent = '0';
+    }
+  }, 1000);
+  disclaimerAccept.addEventListener('click', function() {
+    localStorage.setItem('disclaimer_accepted', 'true');
+    disclaimerModal.classList.remove('open');
+    init();
+  });
+  disclaimerReject.addEventListener('click', function() {
+    document.body.innerHTML =
+      '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;padding:20px;text-align:center;background:#f5f5f5;">' +
+      '<h1 style="font-size:22px;margin-bottom:16px;color:#333;">已拒绝使用</h1>' +
+      '<p style="font-size:14px;color:#666;margin-bottom:8px;">您已拒绝免责声明，无法使用本工具。</p>' +
+      '<p style="font-size:14px;color:#666;">请关闭此页面。</p>' +
+      '</div>';
+  });
+}
+
+checkDisclaimer();

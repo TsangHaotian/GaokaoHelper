@@ -120,6 +120,34 @@
     </div>
   </div>
 
+  <!-- 首次打开免责弹窗 -->
+  <div class="modal-overlay" id="disclaimerModal">
+    <div class="modal disclaimer-modal">
+      <div class="modal-header">
+        <h2>免责声明</h2>
+      </div>
+      <div class="modal-body">
+        <div class="disclaimer-content">
+          <p><strong>本页面为 AI 对话工具，所有内容由人工智能生成，仅供参考。</strong></p>
+          <p>使用本工具前，请仔细阅读以下条款：</p>
+          <ol>
+            <li><strong>AI 局限性</strong>：本工具的回答基于大语言模型（DeepSeek V4 Flash）生成，不保证信息的准确性、完整性和时效性。</li>
+            <li><strong>不构成建议</strong>：本工具提供的任何信息均<strong>不构成</strong>高考志愿填报、学业规划、职业选择或其他任何形式的专业建议。</li>
+            <li><strong>风险自负</strong>：因参考本工具内容而产生的任何经济后果（包括但不限于滑档、退档、错失录取机会等），作者<strong>概不负责</strong>。</li>
+            <li><strong>核实义务</strong>：用户有义务自行核实所有信息，并以官方渠道（教育部、省考试院、目标院校官网等）发布的信息为准。</li>
+            <li><strong>角色扮演</strong>：部分对话模式下 AI 会模拟特定角色风格，但这不代表角色本人或其继承人的观点。</li>
+          </ol>
+          <p class="disclaimer-emph">继续使用即表示您已阅读、理解并同意上述条款。</p>
+          <p class="disclaimer-emph">如不同意，请立即关闭本页面。</p>
+        </div>
+        <div class="disclaimer-actions">
+          <button class="btn btn-outline" id="disclaimerReject">拒绝，退出</button>
+          <button class="btn btn-primary" id="disclaimerAccept" disabled>同意（<span id="disclaimerCountdown">10</span>）</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="chat/app.js"></script>
 </body>
 </html>
