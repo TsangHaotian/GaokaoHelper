@@ -545,7 +545,19 @@ async function sendGroupMessage(text) {
   // Stores the conversation so far for context in subsequent rounds
   var conversation = [];
 
-  async function callMember(member, promptText) {
+  function createStreamBubble(color, initial, labelText, isQuestioner) {
+    var div = document.createElement('div');
+    div.className = 'message bot' + (isQuestioner ? ' bubble-questioner' : '');
+    div.innerHTML =
+      '<div class="msg-avatar"><span class="avatar-bot" style="background:' + color + ';font-size:11px;">' + initial + '</span></div>' +
+      '<div class="bubble"><div class="bubble-skill-label" style="color:' + (isQuestioner ? '#999' : color) + '">' + labelText + '</div></div>';
+    messagesEl.appendChild(div);
+    var bubbleEl = div.querySelector('.bubble');
+    scrollToBottom();
+    return { div: div, bubbleEl: bubbleEl };
+  }
+
+  async function callMemberStream(member, promptText, bubbleObj) {
     var resp = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + STATE.apiKey },
@@ -563,6 +575,7 @@ async function sendGroupMessage(text) {
     });
     if (!resp.ok) {
       var errData = await resp.json().catch(function() { return {}; });
+      if (bubbleObj && bubbleObj.bubbleEl) bubbleObj.bubbleEl.innerHTML = renderMarkdown('[错误] ' + (errData.error ? errData.error.message : 'HTTP ' + resp.status));
       return '[错误] ' + (errData.error ? errData.error.message : 'HTTP ' + resp.status);
     }
     var reader = resp.body.getReader();
@@ -582,107 +595,60 @@ async function sendGroupMessage(text) {
         try {
           var parsed = JSON.parse(data);
           var delta = parsed.choices && parsed.choices[0] && parsed.choices[0].delta ? (parsed.choices[0].delta.content || '') : '';
-          if (delta) fullContent += delta;
+          if (delta) {
+            fullContent += delta;
+            if (bubbleObj && bubbleObj.bubbleEl && !renderTimeout) {
+              renderTimeout = setTimeout(function() {
+                var labelText = member.label || (member === qMember ? '提问者' : '');
+                var c = member === qMember ? '#999' : member.color;
+                bubbleObj.bubbleEl.innerHTML = (labelText ? '<div class="bubble-skill-label" style="color:' + c + '">' + labelText + '</div>' : '') + renderMarkdown(fullContent);
+                renderTimeout = null;
+              }, 50);
+            }
+          }
         } catch (e) { /* skip */ }
       }
+    }
+    if (renderTimeout) clearTimeout(renderTimeout);
+    if (bubbleObj && bubbleObj.bubbleEl) {
+      var labelText = member.label || (member === qMember ? '提问者' : '');
+      var c = member === qMember ? '#999' : member.color;
+      bubbleObj.bubbleEl.innerHTML = (labelText ? '<div class="bubble-skill-label" style="color:' + c + '">' + labelText + '</div>' : '') + renderMarkdown(fullContent);
     }
     return fullContent;
   }
 
-  async function renderMemberResponse(memberIndex, content) {
-    var member = members[memberIndex];
-    var initial = member.label.charAt(0).toUpperCase();
-    var div = document.createElement('div');
-    div.className = 'message bot';
-    div.innerHTML =
-      '<div class="msg-avatar"><span class="avatar-bot" style="background:' + member.color + ';font-size:11px;">' + initial + '</span></div>' +
-      '<div class="bubble"><div class="bubble-skill-label" style="color:' + member.color + '">' + member.label + '</div>' + renderMarkdown(content) + '</div>';
-    messagesEl.appendChild(div);
-    scrollToBottom();
-  }
-
-  async function renderQuestionerResponse(content) {
-    var div = document.createElement('div');
-    div.className = 'message bot bubble-questioner';
-    div.innerHTML =
-      '<div class="msg-avatar"><span class="avatar-bot" style="background:#bbb;font-size:11px;">?</span></div>' +
-      '<div class="bubble"><div class="bubble-skill-label" style="color:#999">提问者</div>' + renderMarkdown(content) + '</div>';
-    messagesEl.appendChild(div);
-    scrollToBottom();
-  }
+  var qMember = { name: 'questioner', label: '提问者', prompt: '', color: '#bbb' };
 
   // Round 0: User question -> each member answers
   for (var mi = 0; mi < members.length; mi++) {
-    var typingDiv = document.createElement('div');
-    typingDiv.className = 'message bot typing';
-    typingDiv.innerHTML =
-      '<div class="msg-avatar"><span class="avatar-bot" style="background:' + members[mi].color + ';font-size:11px;">' + members[mi].label.charAt(0).toUpperCase() + '</span></div>' +
-      '<div class="bubble"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
-    messagesEl.appendChild(typingDiv);
-    scrollToBottom();
-
-    var answer = await callMember(members[mi], text);
-    typingDiv.remove();
-
-    await renderMemberResponse(mi, answer);
+    var bObj = createStreamBubble(members[mi].color, members[mi].label.charAt(0).toUpperCase(), members[mi].label, false);
+    var answer = await callMemberStream(members[mi], text, bObj);
     conversation.push(members[mi].label + '：' + answer);
     allResults.push({ label: members[mi].label, content: answer, isQuestioner: false });
   }
 
-  // Subsequent rounds: questioner (if enabled) -> members respond
+  // Subsequent rounds
   for (var round = 1; round <= rounds; round++) {
-    // Questioner generates a follow-up question
     if (withQuestioner) {
-      var qDiv = document.createElement('div');
-      qDiv.className = 'message bot typing bubble-questioner';
-      qDiv.innerHTML =
-        '<div class="msg-avatar"><span class="avatar-bot" style="background:#bbb;font-size:11px;">?</span></div>' +
-        '<div class="bubble"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
-      messagesEl.appendChild(qDiv);
-      scrollToBottom();
-
       var questionerPrompt = '你是群聊主持人。请根据以下对话历史，提出一个引导性的问题来促进讨论深入。问题要简短有针对性，直接问。\n\n对话历史：\n' + conversation.join('\n') + '\n\n请提出你的问题：';
-      var qAnswer = await callMember({ name: 'questioner', label: '提问者', prompt: '', color: '#bbb', _questionerMode: true }, questionerPrompt);
-      qDiv.remove();
-
-      await renderQuestionerResponse(qAnswer);
+      var qObj = createStreamBubble('#bbb', '?', '提问者', true);
+      var qAnswer = await callMemberStream(qMember, questionerPrompt, qObj);
       conversation.push('提问者：' + qAnswer);
       allResults.push({ label: '提问者', content: qAnswer, isQuestioner: true });
 
-      // Members respond to the questioner's prompt
       for (var mj = 0; mj < members.length; mj++) {
-        var tDiv = document.createElement('div');
-        tDiv.className = 'message bot typing';
-        tDiv.innerHTML =
-          '<div class="msg-avatar"><span class="avatar-bot" style="background:' + members[mj].color + ';font-size:11px;">' + members[mj].label.charAt(0).toUpperCase() + '</span></div>' +
-          '<div class="bubble"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
-        messagesEl.appendChild(tDiv);
-        scrollToBottom();
-
-        var a = await callMember(members[mj], qAnswer);
-        tDiv.remove();
-
-        await renderMemberResponse(mj, a);
+        var bObj2 = createStreamBubble(members[mj].color, members[mj].label.charAt(0).toUpperCase(), members[mj].label, false);
+        var a = await callMemberStream(members[mj], qAnswer, bObj2);
         conversation.push(members[mj].label + '：' + a);
         allResults.push({ label: members[mj].label, content: a, isQuestioner: false });
       }
     } else {
-      // No questioner: each member responds to the previous member's last answer
       var lastAnswer = conversation[conversation.length - 1] || text;
       var lastLabel = lastAnswer.split('：')[0] || '上一位';
       for (var mk = 0; mk < members.length; mk++) {
-        var tDiv2 = document.createElement('div');
-        tDiv2.className = 'message bot typing';
-        tDiv2.innerHTML =
-          '<div class="msg-avatar"><span class="avatar-bot" style="background:' + members[mk].color + ';font-size:11px;">' + members[mk].label.charAt(0).toUpperCase() + '</span></div>' +
-          '<div class="bubble"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
-        messagesEl.appendChild(tDiv2);
-        scrollToBottom();
-
-        var a2 = await callMember(members[mk], lastLabel + '刚才说：' + (conversation[conversation.length - 1] || text) + '\n\n你对这个观点怎么看？有什么补充或不同意见？');
-        tDiv2.remove();
-
-        await renderMemberResponse(mk, a2);
+        var bObj3 = createStreamBubble(members[mk].color, members[mk].label.charAt(0).toUpperCase(), members[mk].label, false);
+        var a2 = await callMemberStream(members[mk], lastLabel + '刚才说：' + (conversation[conversation.length - 1] || text) + '\n\n你对这个观点怎么看？有什么补充或不同意见？', bObj3);
         conversation.push(members[mk].label + '：' + a2);
         allResults.push({ label: members[mk].label, content: a2, isQuestioner: false });
       }
