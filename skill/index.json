@@ -4,5 +4,6 @@
   { "name": "balancer", "label": "平衡者" },
   { "name": "parent", "label": "家长" },
   { "name": "counselor", "label": "心理辅导员" },
-  { "name": "career", "label": "职业规划师" }
+  { "name": "career", "label": "职业规划师" },
+  { "name": "data-analyst", "label": "数据分析师" }
 ]
