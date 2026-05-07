@@ -2,9 +2,26 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GaokaoAI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-title" content="GaokaoAI">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#007aff">
+  <meta name="color-scheme" content="light">
+  <title>GaokaoAI · AI 智聊</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23007aff'/%3E%3Ctext x='50' y='68' text-anchor='middle' fill='white' font-size='48' font-weight='700' font-family='sans-serif'%3EG%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23007aff'/%3E%3Ctext x='50' y='68' text-anchor='middle' fill='white' font-size='48' font-weight='700' font-family='sans-serif'%3EG%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="chat/style.css">
+  <style>
+    /* PWA splash screen */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(180deg, #f2f2f7 0%, #ffffff 100%);
+    }
+  </style>
 </head>
 <body>
   <div class="app">
@@ -60,13 +77,13 @@
             <div class="dropdown-item group-only" id="groupMenuMembers">
               <span style="color:var(--text-secondary);font-size:12px;">群聊成员</span>
             </div>
-            <div class="dropdown-item group-only disabled" id="groupMenuMemberList" style="padding:4px 12px 8px;"></div>
+            <div class="dropdown-item group-only" id="groupMenuMemberList"></div>
             <div class="dropdown-divider group-only" id="groupDivider2"></div>
             <div class="dropdown-item group-only clickable" id="groupMenuRoundSetting">
               <span id="groupMenuRoundText">讨论轮数：2</span>
               <div style="display:flex;gap:4px;margin-left:auto;">
                 <button class="btn-round-adjust" id="roundDec">−</button>
-                <span id="roundDisplay" style="min-width:18px;text-align:center;">2</span>
+                <span id="roundDisplay" style="min-width:18px;text-align:center;font-weight:500;">2</span>
                 <button class="btn-round-adjust" id="roundInc">+</button>
               </div>
             </div>
@@ -78,18 +95,11 @@
                 <span class="toggle-slider"></span>
               </label>
             </div>
-            <div class="dropdown-divider"></div>
-            <div class="dropdown-item disabled" id="skillInfoName"></div>
-            <div class="dropdown-item disabled" id="skillInfoDesc"></div>
-            <div class="dropdown-item clickable" id="skillRepoLink">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-              <span id="skillRepoText">查看 GitHub 仓库</span>
-            </div>
-            <div class="dropdown-divider"></div>
-            <div class="dropdown-item disabled disclaimer-text">
-              本页面使用 AI 角色扮演，基于公开的 SKILL 定义文件模拟角色风格。<br>
-              内容由 AI 生成，不代表角色本人观点。<br>
-              SKILL 文件来源及版权归属其原始作者。
+            <div class="dropdown-divider normal-only" id="normalDivider1"></div>
+            <div class="dropdown-item normal-only skill-info-card">
+              <div class="skill-info-row"><span class="skill-info-label">角色</span><span class="skill-info-value" id="skillInfoName"></span></div>
+              <div class="skill-info-row"><span class="skill-info-label">仓库</span><span class="skill-info-value skill-info-repo" id="skillInfoDesc"></span></div>
+              <div class="skill-info-row"><span class="skill-info-label">简介</span><span class="skill-info-value skill-info-disclaimer">基于公开的 SKILL 定义文件模拟角色风格，内容由 AI 生成，不代表本人观点，版权归原作者。</span></div>
             </div>
           </div>
         </div>

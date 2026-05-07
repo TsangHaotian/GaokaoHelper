@@ -91,8 +91,6 @@ const dropdownMenu      = $('dropdownMenu');
 const clearBtn          = $('clearBtn');
 const skillInfoName     = $('skillInfoName');
 const skillInfoDesc     = $('skillInfoDesc');
-const skillRepoLink     = $('skillRepoLink');
-const skillRepoText     = $('skillRepoText');
 const mobileToggle      = $('mobileToggle');
 const sidebar           = document.querySelector('.sidebar');
 const groupDivider1     = $('groupDivider1');
@@ -180,21 +178,43 @@ function renderSkillList() {
 // ===== Group Chat Settings (Dropdown) =====
 function updateGroupDropdownVisibility() {
   var isGroup = STATE.groupChatEnabled;
-  var items = document.querySelectorAll('.group-only');
-  items.forEach(function(el) {
-    if (isGroup) {
-      el.classList.add('visible');
-    } else {
-      el.classList.remove('visible');
-    }
+  document.querySelectorAll('.group-only').forEach(function(el) {
+    el.classList.toggle('visible', isGroup);
   });
+  document.querySelectorAll('.normal-only').forEach(function(el) {
+    if (el) el.classList.toggle('visible', !isGroup);
+  });
+  var nd1 = document.getElementById('normalDivider1');
+  if (nd1) nd1.classList.toggle('visible', !isGroup);
+  var nd2 = document.getElementById('normalDivider2');
+  if (nd2) nd2.classList.toggle('visible', !isGroup);
 }
 
-function renderGroupMemberTags() {
-  var members = STATE.groupMembers.length > 0 ? STATE.groupMembers : STATE.skills;
-  groupMenuMemberList.innerHTML = members.map(function(m) {
-    return '<span class="group-menu-member-tag" style="background:' + m.color + '">' + m.label + '</span>';
-  }).join('');
+function renderGroupMemberCheckboxes() {
+  groupMenuMemberList.innerHTML = '';
+  STATE.skills.forEach(function(skill) {
+    var checked = STATE.groupMembers.some(function(m) { return m.name === skill.name; });
+    var label = document.createElement('label');
+    label.className = 'group-member-check-item';
+    label.innerHTML =
+      '<input type="checkbox" class="group-member-cb-sm" data-name="' + skill.name + '"' + (checked ? ' checked' : '') + '>' +
+      '<span class="group-menu-member-tag-sm" style="background:' + skill.color + '">' + skill.label.charAt(0).toUpperCase() + '</span>' +
+      '<span>' + skill.label + '</span>';
+    groupMenuMemberList.appendChild(label);
+
+    label.querySelector('.group-member-cb-sm').addEventListener('change', function(e) {
+      var name = e.target.dataset.name;
+      if (e.target.checked) {
+        var s = STATE.skills.find(function(sk) { return sk.name === name; });
+        if (s && !STATE.groupMembers.some(function(m) { return m.name === name; })) {
+          STATE.groupMembers.push({ name: s.name, label: s.label, prompt: s.prompt, color: s.color });
+        }
+      } else {
+        STATE.groupMembers = STATE.groupMembers.filter(function(m) { return m.name !== name; });
+      }
+      saveGroupMembers();
+    });
+  });
 }
 
 function updateGroupMenuText() {
@@ -213,11 +233,11 @@ function selectSkill(name) {
     currentSkillName.textContent = 'AI 群聊';
     skillInfoName.textContent = 'AI 群聊';
     skillInfoDesc.textContent = '多人同时回答';
-    skillRepoLink.style.display = 'none';
+    
     STATE.messages = loadMessages(GROUP_CHAT_NAME);
     renderSkillList();
     updateGroupDropdownVisibility();
-    renderGroupMemberTags();
+    renderGroupMemberCheckboxes();
     updateGroupMenuText();
     updateUIForConfigured(STATE.configured);
     renderAllMessages();
@@ -232,14 +252,13 @@ function selectSkill(name) {
   STATE.activeSkill = { name: skill.name, label: skill.label, prompt: skill.prompt || '' };
   currentSkillName.textContent = skill.label;
   skillInfoName.textContent = skill.label;
-  skillInfoDesc.textContent = '来自 skill/' + skill.name + '/SKILL.md';
-  var repo = SKILL_REPOS[skill.name];
-  if (repo) {
-    skillRepoLink.style.display = 'flex';
-    skillRepoText.textContent = repo;
-    skillRepoLink.onclick = function() { window.open(repo, '_blank'); dropdownMenu.classList.remove('open'); };
+  var repoUrl = SKILL_REPOS[skill.name];
+  skillInfoDesc.textContent = repoUrl || '无';
+  skillInfoDesc.style.cursor = repoUrl ? 'pointer' : 'default';
+  if (repoUrl) {
+    skillInfoDesc.onclick = function() { window.open(repoUrl, '_blank'); dropdownMenu.classList.remove('open'); };
   } else {
-    skillRepoLink.style.display = 'none';
+    skillInfoDesc.onclick = null;
   }
   STATE.messages = loadMessages(skill.name);
   renderSkillList();
@@ -752,20 +771,19 @@ async function init() {
     STATE.messages = loadMessages(targetSkill.name);
     currentSkillName.textContent = targetSkill.label;
     skillInfoName.textContent = targetSkill.label;
-    skillInfoDesc.textContent = '来自 skill/' + targetSkill.name + '/SKILL.md';
     var repoInit = SKILL_REPOS[targetSkill.name];
+    skillInfoDesc.textContent = repoInit || '无';
+    skillInfoDesc.style.cursor = repoInit ? 'pointer' : 'default';
     if (repoInit) {
-      skillRepoLink.style.display = 'flex';
-      skillRepoText.textContent = repoInit;
-      skillRepoLink.onclick = function() { window.open(repoInit, '_blank'); dropdownMenu.classList.remove('open'); };
+      skillInfoDesc.onclick = function() { window.open(repoInit, '_blank'); dropdownMenu.classList.remove('open'); };
     } else {
-      skillRepoLink.style.display = 'none';
+      skillInfoDesc.onclick = null;
     }
   }
 
   renderSkillList();
   updateGroupDropdownVisibility();
-  renderGroupMemberTags();
+  renderGroupMemberCheckboxes();
   updateGroupMenuText();
   updateUIForConfigured(STATE.configured);
   renderAllMessages();

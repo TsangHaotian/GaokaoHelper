@@ -29,7 +29,8 @@
   --font: -apple-system, "Helvetica Neue", "SF Pro Display", "PingFang SC",
     "Microsoft YaHei", sans-serif;
   --font-mono: "SF Mono", "Menlo", monospace;
-  --safe-bottom: 0px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 html, body {
@@ -328,6 +329,13 @@ html, body {
 #groupDivider2.visible { display: block; }
 #groupMenuMembers.visible { display: flex; }
 
+.normal-only { display: none; }
+.normal-only.visible { display: flex; }
+#normalDivider1 { display: none; height: 0.5px; background: var(--border); margin: 4px 8px; }
+#normalDivider1.visible { display: block; }
+#normalDivider2 { display: none; height: 0.5px; background: var(--border); margin: 4px 8px; }
+#normalDivider2.visible { display: block; }
+
 .btn-round-adjust {
   width: 24px;
   height: 24px;
@@ -349,19 +357,42 @@ html, body {
 .btn-round-adjust:hover {
   background: var(--bg-hover);
 }
-
-#groupMenuMemberList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+/* ===== Skill Info Card (Single Chat) ===== */
+.skill-info-card {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 6px !important;
+  padding: 10px 12px !important;
 }
 
-.group-menu-member-tag {
-  font-size: 11px;
-  padding: 2px 10px;
-  border-radius: 12px;
-  color: #fff;
+.skill-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.skill-info-label {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  min-width: 32px;
   font-weight: 500;
+}
+
+.skill-info-value {
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+.skill-info-repo {
+  color: var(--accent);
+}
+
+.skill-info-disclaimer {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
 /* ===== iOS Toggle Switch ===== */
@@ -406,6 +437,56 @@ html, body {
   transform: translateX(18px);
 }
 
+/* ===== Group Member Checkboxes (Dropdown) ===== */
+#groupMenuMemberList.group-only {
+  display: none;
+}
+
+#groupMenuMemberList.group-only.visible {
+  display: flex;
+}
+
+#groupMenuMemberList {
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 4px 4px;
+}
+
+.group-member-check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.15s;
+}
+
+.group-member-check-item:hover {
+  background: var(--bg-hover);
+}
+
+.group-member-cb-sm {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.group-menu-member-tag-sm {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+}
+
 /* ===== Chat Main ===== */
 .chat-main {
   flex: 1;
@@ -420,6 +501,7 @@ html, body {
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
+  padding-top: calc(12px + var(--safe-top));
   background: rgba(255,255,255,0.95);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
@@ -943,6 +1025,7 @@ html, body {
 
   .chat-header {
     padding: 8px 12px;
+    padding-top: calc(8px + var(--safe-top));
     gap: 8px;
   }
 
