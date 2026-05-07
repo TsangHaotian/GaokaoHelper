@@ -1,5 +1,8 @@
 [
   { "name": "zhangxuefeng", "label": "张雪峰" },
   { "name": "ZhangXueFeng-skill-main", "label": "张雪峰 V2.0" },
-  { "name": "balancer", "label": "平衡者" }
+  { "name": "balancer", "label": "平衡者" },
+  { "name": "parent", "label": "家长" },
+  { "name": "counselor", "label": "心理辅导员" },
+  { "name": "career", "label": "职业规划师" }
 ]
