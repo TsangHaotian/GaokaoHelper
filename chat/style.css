@@ -184,6 +184,14 @@ html, body {
   gap: 2px;
 }
 
+.version-tag {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 2px 0 4px;
+  letter-spacing: 0.5px;
+}
+
 .sidebar-footer-btn {
   width: 100%;
   padding: 8px 12px;
