@@ -10,19 +10,20 @@ const API_PROVIDERS = {
   },
   moonshot: {
     label: 'Moonshot 月之暗面',
-    baseUrl: 'https://api.moonshot.cn',
-    model: 'moonshot-v1-auto-8k',
+    baseUrl: 'https://api.moonshot.cn/v1',
+    model: 'moonshot-v1-128k',
     keyPrefix: 'sk-',
     isFree: false,
     desc: '在 <a href="https://platform.moonshot.cn/console" target="_blank">platform.moonshot.cn</a> 获取 API Key',
   },
   minimax: {
     label: 'MiniMax',
-    baseUrl: 'https://api.minimax.chat',
-    model: 'MiniMax-Text-01',
+    baseUrl: 'https://api.minimaxi.com/v1',
+    model: 'M2-her',
+    maxTokens: 2048,
     keyPrefix: 'sk-',
     isFree: false,
-    desc: '有免费额度。在 <a href="https://platform.minimaxi.com" target="_blank">platform.minimaxi.com</a> 获取 group_id 和 API Key',
+    desc: '在 <a href="https://platform.minimaxi.com" target="_blank">platform.minimaxi.com</a> 获取 API Key',
     note: '需在设置中填写 MiniMax 的 group_id',
   },
   glm_free: {
@@ -125,6 +126,7 @@ const apiKeyInput       = $('apiKeyInput');
 const apiProviderSelect = $('apiProviderSelect');
 const apiKeyDesc        = $('apiKeyDesc');
 const saveKeyBtn        = $('saveKeyBtn');
+const getApiKeyBtn      = $('getApiKeyBtn');
 const editKeyBtn        = $('editKeyBtn');
 const statusDot         = $('statusDot');
 const statusText        = $('statusText');
@@ -472,6 +474,7 @@ function setStatus(type, text) {
 
 // ===== Plain text renderer (no markdown) =====
 function renderMarkdown(text) {
+  text = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
   var html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   var lines = html.split('\n').filter(function(l) { return l.trim(); });
   return lines.map(function(l) { return '<p>' + l + '</p>'; }).join('');
@@ -527,7 +530,7 @@ async function sendSingleMessage(text) {
         ...STATE.messages,
       ],
       stream: true,
-      max_tokens: 4096,
+      max_tokens: cfg.maxTokens || 4096,
       temperature: 1.0,
     }),
     signal: STATE.abortController.signal,
@@ -620,7 +623,7 @@ async function sendGroupMessage(text) {
           { role: 'user', content: promptText },
         ],
         stream: true,
-        max_tokens: 4096,
+        max_tokens: cfg.maxTokens || 4096,
         temperature: 1.0,
       }),
       signal: STATE.abortController.signal,
@@ -898,6 +901,16 @@ async function init() { try {
     saveKeyBtn.style.display = 'inline-block'; editKeyBtn.style.display = 'none';
     setStatus('inactive', '未设置');
   });
+  getApiKeyBtn.addEventListener('click', function() {
+    var urls = {
+      deepseek: 'guide/deepseek.html',
+      moonshot: 'guide/moonshot.html',
+      minimax: 'guide/minimax.html',
+      glm_free: 'guide/glm_free.html',
+    };
+    var url = urls[STATE.apiProvider] || urls.deepseek;
+    window.open(url, '_blank');
+  });
 
   // Menu toggle
   menuBtn.addEventListener('click', function(e) {
@@ -949,9 +962,14 @@ async function init() { try {
   // Initial render for model dropdown
   renderModelDropdown();
 
-  // Auto-show settings modal if no API key configured
-  if (!STATE.configured) {
+  // Auto-show settings modal if no API key configured, or if returning from guide
+  if (!STATE.configured || window.location.search.indexOf('openSettings=1') !== -1) {
     setTimeout(function() { settingsModal.classList.add('open'); }, 500);
+    // Clean up URL param to prevent re-opening on refresh
+    if (window.location.search.indexOf('openSettings=1') !== -1) {
+      var url = window.location.pathname + window.location.hash;
+      window.history.replaceState(null, '', url);
+    }
   }
 
 } catch(e) { console.error("init error:", e); } }

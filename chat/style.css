@@ -811,6 +811,21 @@ html, body {
 
 .btn-outline:hover { background: var(--bg-hover); }
 
+.btn-danger {
+  background: #ff3b30;
+  color: #fff;
+  padding: 10px 16px;
+  font-size: 13px;
+  border-radius: 10px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.btn-danger:hover { background: #d32f2f; }
+
 /* ===== Modal ===== */
 .modal-overlay {
   position: fixed; inset: 0;

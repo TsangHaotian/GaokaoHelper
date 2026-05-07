@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>获取 DeepSeek API Key</title>
+  <style>
+    body { font-family: -apple-system, "PingFang SC", sans-serif; max-width: 720px; margin: 0 auto; padding: 24px 16px; background: #f5f5f7; color: #1c1c1e; line-height: 1.6; }
+    .nav-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .back-btn { display: flex; align-items: center; gap: 4px; color: #007aff; text-decoration: none; font-size: 14px; font-weight: 500; }
+    .back-btn:hover { text-decoration: underline; }
+    .back-btn svg { width: 16px; height: 16; }
+    h1 { font-size: 24px; margin-bottom: 8px; }
+    .desc { color: #636366; margin-bottom: 20px; }
+    .desc a { color: #007aff; text-decoration: none; }
+    .desc a:hover { text-decoration: underline; }
+    .step { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 0.5px solid #d1d1d6; }
+    .step-number { display: inline-block; width: 24px; height: 24px; background: #007aff; color: #fff; border-radius: 50%; text-align: center; line-height: 24px; font-size: 13px; font-weight: 600; margin-right: 8px; }
+    .step-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .step p { margin: 0 0 8px; font-size: 14px; }
+    img { max-width: 100%; border-radius: 8px; border: 0.5px solid #e5e5ea; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="nav-bar">
+    <a class="back-btn" href="../index.html?openSettings=1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      返回 GaokaoAI
+    </a>
+  </div>
+
+  <h1>获取 DeepSeek API Key</h1>
+  <p class="desc">官网：<a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a></p>
+
+  <div class="step">
+    <div class="step-title"><span class="step-number">1</span> 打开 DeepSeek 开放平台</div>
+    <p>访问 <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a>，注册并登录账号。</p>
+    <img src="img_deepseek/注册并登录.png" alt="注册并登录">
+  </div>
+
+  <div class="step">
+    <div class="step-title"><span class="step-number">2</span> 注册 / 登录账号</div>
+    <p>使用手机号或邮箱注册账号，若已有账号直接登录。</p>
+    <img src="img_deepseek/注册成功.png" alt="注册成功">
+  </div>
+
+  <div class="step">
+    <div class="step-title"><span class="step-number">3</span> 进入 API Key 管理</div>
+    <p>登录后，在左侧菜单栏找到「API Keys」，点击进入。</p>
+    <img src="img_deepseek/点击左侧API Keys.jpg" alt="点击左侧 API Keys">
+  </div>
+
+  <div class="step">
+    <div class="step-title"><span class="step-number">4</span> 创建 API Key</div>
+    <p>点击「创建 API Key」按钮，输入名称（任意填写），创建后复制 Key 并保存。</p>
+    <p><strong>注意：</strong>关闭弹窗后 Key 将不再完整显示，请务必先复制。</p>
+    <img src="img_deepseek/点击创建api key（名字随便写）.png" alt="创建 API Key">
+  </div>
+
+  <div class="step">
+    <div class="step-title"><span class="step-number">5</span> 填入 GaokaoAI</div>
+    <p>将复制的 Key 粘贴到 GaokaoAI 设置中的 API Key 输入框，点击「保存」即可。</p>
+    <img src="img_deepseek/复制这个api key返回页面即可输入使用.jpg" alt="复制 API Key 并填入">
+  </div>
+</body>
+</html>

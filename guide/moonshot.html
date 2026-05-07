@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>获取 Moonshot API Key</title>
+  <style>
+    body { font-family: -apple-system, "PingFang SC", sans-serif; max-width: 720px; margin: 0 auto; padding: 24px 16px; background: #f5f5f7; color: #1c1c1e; line-height: 1.6; }
+    .nav-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .back-btn { display: flex; align-items: center; gap: 4px; color: #007aff; text-decoration: none; font-size: 14px; font-weight: 500; }
+    .back-btn:hover { text-decoration: underline; }
+    .back-btn svg { width: 16px; height: 16; }
+    h1 { font-size: 24px; margin-bottom: 8px; }
+    .desc { color: #636366; margin-bottom: 20px; }
+    .desc a { color: #007aff; text-decoration: none; }
+    .desc a:hover { text-decoration: underline; }
+    .step { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 0.5px solid #d1d1d6; }
+    .step-number { display: inline-block; width: 24px; height: 24px; background: #007aff; color: #fff; border-radius: 50%; text-align: center; line-height: 24px; font-size: 13px; font-weight: 600; margin-right: 8px; }
+    .step-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .step p { margin: 0 0 8px; font-size: 14px; }
+    img { max-width: 100%; border-radius: 8px; border: 0.5px solid #e5e5ea; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="nav-bar">
+    <a class="back-btn" href="../index.html?openSettings=1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      返回 GaokaoAI
+    </a>
+  </div>
+
+  <h1>获取 Moonshot API Key</h1>
+  <p class="desc">官网：<a href="https://platform.moonshot.cn" target="_blank">platform.moonshot.cn</a></p>
+
+  <div class="step">
+    <div class="step-title"><span class="step-number">1</span> 打开 Moonshot 开放平台</div>
+    <p>访问 <a href="https://platform.moonshot.cn" target="_blank">platform.moonshot.cn</a>，注册并登录账号。</p>
+    <img src="img_moonshot/登录注册界面.png" alt="登录注册界面">
+  </div>
+
+  <div class="step">
+    <div class="step-title"><span class="step-number">2</span> 注册账号</div>
+    <p>建议直接用手机号注册，首次注册送15元免费额度。</p>
+    <img src="img_moonshot/建议直接用手机号注册（首次注册送15元免费额度）.png" alt="注册账号">
+  </div>
+
+  <div class="step">
+    <div class="step-title"><span class="step-number">3</span> 进入 API Key 管理</div>
+    <p>登录后，点击左侧菜单的「API Key 管理」。</p>
+    <img src="img_moonshot/点击api key管理.jpg" alt="点击 API Key 管理">
+  </div>
+
+  <div class="step">
+    <div class="step-title"><span class="step-number">4</span> 新建 API Key</div>
+    <p>点击「新建 API Key」，名称和项目随便填写。</p>
+    <img src="img_moonshot/点击新建api key（名称项目随便写）.png" alt="新建 API Key">
+  </div>
+
+  <div class="step">
+    <div class="step-title"><span class="step-number">5</span> 确认创建</div>
+    <p>点击确认，完成创建。</p>
+    <img src="img_moonshot/点击新建api key（名称项目随便写）2.png" alt="确认创建">
+  </div>
+
+  <div class="step">
+    <div class="step-title"><span class="step-number">6</span> 填入 GaokaoAI</div>
+    <p>复制 API Key，粘贴到 GaokaoAI 设置中的 API Key 输入框，点击「保存」即可。</p>
+    <img src="img_moonshot/复制api返回粘贴即可.jpg" alt="复制 API Key 并填入">
+  </div>
+</body>
+</html>
