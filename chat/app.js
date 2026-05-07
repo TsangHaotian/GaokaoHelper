@@ -1,6 +1,44 @@
+// ===== API Provider Config =====
+const API_PROVIDERS = {
+  deepseek: {
+    label: 'DeepSeek',
+    baseUrl: 'https://api.deepseek.com',
+    model: 'deepseek-chat',
+    keyPrefix: 'sk-',
+    isFree: false,
+    desc: '在 <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a> 获取 API Key',
+  },
+  moonshot: {
+    label: 'Moonshot 月之暗面',
+    baseUrl: 'https://api.moonshot.cn',
+    model: 'moonshot-v1-auto-8k',
+    keyPrefix: 'sk-',
+    isFree: false,
+    desc: '在 <a href="https://platform.moonshot.cn/console" target="_blank">platform.moonshot.cn</a> 获取 API Key',
+  },
+  minimax: {
+    label: 'MiniMax',
+    baseUrl: 'https://api.minimax.chat',
+    model: 'MiniMax-Text-01',
+    keyPrefix: 'sk-',
+    isFree: false,
+    desc: '有免费额度。在 <a href="https://platform.minimaxi.com" target="_blank">platform.minimaxi.com</a> 获取 group_id 和 API Key',
+    note: '需在设置中填写 MiniMax 的 group_id',
+  },
+  glm_free: {
+    label: 'GLM-4-Flash',
+    baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+    model: 'glm-4-flash',
+    keyPrefix: '',
+    isFree: true,
+    desc: '完全免费！在 <a href="https://bigmodel.cn" target="_blank">bigmodel.cn</a> 注册获取 API Key（无需付费）',
+  },
+};
+
 // ===== State =====
 const STATE = {
   apiKey: '',
+  apiProvider: 'deepseek',
   configured: false,
   loading: false,
   messages: [],
@@ -11,7 +49,7 @@ const STATE = {
   groupChatEnabled: false,
   groupMembers: [],
   groupRounds: 2,
-  groupQuestioner: true,   // "提问者" bot enabled
+  groupQuestioner: true,
 };
 
 const GROUP_CHAT_NAME = '__group_chat__';
@@ -69,9 +107,23 @@ function loadGroupQuestioner() {
   try { var v = localStorage.getItem(storageKey('group_questioner')); return v !== '0'; } catch (e) { return true; }
 }
 
+function saveProvider() {
+  localStorage.setItem(storageKey('api_provider'), STATE.apiProvider);
+}
+
+function loadProvider() {
+  try { return localStorage.getItem(storageKey('api_provider')) || 'deepseek'; } catch (e) { return 'deepseek'; }
+}
+
+function getProviderConfig() {
+  return API_PROVIDERS[STATE.apiProvider] || API_PROVIDERS.deepseek;
+}
+
 // ===== DOM Refs =====
 const $ = (id) => document.getElementById(id);
 const apiKeyInput       = $('apiKeyInput');
+const apiProviderSelect = $('apiProviderSelect');
+const apiKeyDesc        = $('apiKeyDesc');
 const saveKeyBtn        = $('saveKeyBtn');
 const editKeyBtn        = $('editKeyBtn');
 const statusDot         = $('statusDot');
@@ -86,6 +138,10 @@ const skillListEl       = $('skillList');
 const statusBadge       = $('statusBadge');
 const statusDotFooter   = $('statusDot');
 const currentSkillName  = $('currentSkillName');
+const headerSubtitle    = $('headerSubtitle');
+const modelSelectBtn    = $('modelSelectBtn');
+const modelIndicator    = $('modelIndicator');
+const modelDropdown     = $('modelDropdown');
 const menuBtn           = $('menuBtn');
 const dropdownMenu      = $('dropdownMenu');
 const clearBtn          = $('clearBtn');
@@ -361,7 +417,11 @@ function renderMessageDOM(role, content, skillLabel, isQuestioner) {
 
 // ===== API Key =====
 function loadSavedKey() {
-  const saved = localStorage.getItem('deepseek_api_key');
+  STATE.apiProvider = loadProvider();
+  apiProviderSelect.value = STATE.apiProvider;
+  updateApiKeyDesc();
+
+  const saved = localStorage.getItem('api_key_' + STATE.apiProvider);
   if (saved) {
     STATE.apiKey = saved;
     STATE.configured = true;
@@ -369,13 +429,26 @@ function loadSavedKey() {
   }
 }
 
+function updateApiKeyDesc() {
+  var cfg = getProviderConfig();
+  apiKeyDesc.innerHTML = cfg.desc;
+  apiKeyInput.placeholder = cfg.keyPrefix ? (cfg.keyPrefix + '...') : '输入 API Key...';
+  headerSubtitle.textContent = cfg.label + (cfg.isFree ? ' · 免费' : '');
+  modelIndicator.textContent = cfg.label;
+}
+
 function saveApiKey() {
   const key = apiKeyInput.value.trim();
+  var cfg = getProviderConfig();
   if (!key) { setStatus('error', '请输入 API Key'); return; }
-  if (key.indexOf('sk-') !== 0) { setStatus('error', 'Key 格式不正确，应以 sk- 开头'); return; }
+  if (cfg.keyPrefix && key.indexOf(cfg.keyPrefix) !== 0) {
+    setStatus('error', 'Key 格式不正确');
+    return;
+  }
   STATE.apiKey = key;
   STATE.configured = true;
-  localStorage.setItem('deepseek_api_key', key);
+  localStorage.setItem('api_key_' + STATE.apiProvider, key);
+  saveProvider();
   updateUIForConfigured(true);
   setStatus('active', '已就绪');
 }
@@ -442,12 +515,13 @@ async function sendMessage() {
 
 async function sendSingleMessage(text) {
   showTypingIndicator();
+  var cfg = getProviderConfig();
   var systemPrompt = STATE.activeSkill.prompt || '';
-  var resp = await fetch('https://api.deepseek.com/chat/completions', {
+  var resp = await fetch(cfg.baseUrl + '/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + STATE.apiKey },
     body: JSON.stringify({
-      model: 'deepseek-chat',
+      model: cfg.model,
       messages: [
         ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
         ...STATE.messages,
@@ -540,11 +614,12 @@ async function sendGroupMessage(text) {
   }
 
   async function callMemberStream(member, promptText, bubbleObj) {
-    var resp = await fetch('https://api.deepseek.com/chat/completions', {
+    var cfg = getProviderConfig();
+    var resp = await fetch(cfg.baseUrl + '/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + STATE.apiKey },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: cfg.model,
         messages: [
           { role: 'system', content: member.prompt || '' },
           { role: 'user', content: promptText },
@@ -678,7 +753,8 @@ function onInputKeydown(e) {
 }
 
 // ===== Init =====
-async function init() {
+async function init() { try {
+
   await scanSkills();
   loadSavedKey();
 
@@ -767,6 +843,60 @@ async function init() {
   roundInc.addEventListener('click', function(e) { e.stopPropagation(); setRounds(STATE.groupRounds + 1); });
   groupMenuQuestionerSetting.addEventListener('click', toggleQuestioner);
 
+  function switchProvider(provider) {
+    STATE.apiProvider = provider;
+    apiProviderSelect.value = provider;
+    updateApiKeyDesc();
+    apiKeyInput.value = '';
+    apiKeyInput.disabled = false;
+    saveKeyBtn.style.display = 'inline-block';
+    editKeyBtn.style.display = 'none';
+    STATE.configured = false;
+    STATE.apiKey = '';
+    updateUIForConfigured(false);
+    setStatus('inactive', '未设置');
+    var saved = localStorage.getItem('api_key_' + STATE.apiProvider);
+    if (saved) {
+      STATE.apiKey = saved;
+      STATE.configured = true;
+      apiKeyInput.value = saved;
+      updateUIForConfigured(true);
+      setStatus('active', '已就绪');
+    }
+    renderModelDropdown();
+  }
+
+  apiProviderSelect.addEventListener('change', function() {
+    switchProvider(apiProviderSelect.value);
+  });
+
+  // Model dropdown
+  function renderModelDropdown() {
+    var keys = Object.keys(API_PROVIDERS);
+    modelDropdown.innerHTML = keys.map(function(k) {
+      var cfg = API_PROVIDERS[k];
+      var active = k === STATE.apiProvider;
+      var dot = active ? '<span class="model-check">✓</span>' : '<span class="model-dot" style="background:' + (k === 'deepseek' ? '#007aff' : k === 'moonshot' ? '#ff9500' : k === 'minimax' ? '#34c759' : '#8e44ad') + '"></span>';
+      return '<div class="model-dropdown-item' + (active ? ' active' : '') + '" data-provider="' + k + '">' +
+        dot +
+        '<span class="model-name">' + cfg.label + '</span>' +
+        '<span class="model-badge">' + cfg.model + '</span>' +
+      '</div>';
+    }).join('');
+
+    modelDropdown.querySelectorAll('.model-dropdown-item').forEach(function(el) {
+      el.addEventListener('click', function() {
+        switchProvider(this.dataset.provider);
+        modelDropdown.classList.remove('open');
+      });
+    });
+  }
+
+  modelSelectBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    modelDropdown.classList.toggle('open');
+  });
+
   saveKeyBtn.addEventListener('click', function() { saveApiKey(); if (STATE.configured) settingsModal.classList.remove('open'); });
   editKeyBtn.addEventListener('click', function() {
     apiKeyInput.disabled = false; apiKeyInput.focus();
@@ -780,6 +910,11 @@ async function init() {
     dropdownMenu.classList.toggle('open');
   });
   document.addEventListener('click', function(e) {
+    // Close model dropdown if clicking outside
+    if (modelSelectBtn && !modelSelectBtn.contains(e.target) && !modelDropdown.contains(e.target)) {
+      modelDropdown.classList.remove('open');
+    }
+    // Close ... dropdown if clicking outside
     if (!dropdownMenu.contains(e.target) && e.target !== menuBtn) {
       dropdownMenu.classList.remove('open');
     }
@@ -816,11 +951,15 @@ async function init() {
   chatInput.addEventListener('keydown', onInputKeydown);
   if (STATE.configured) chatInput.focus();
 
+  // Initial render for model dropdown
+  renderModelDropdown();
+
   // Auto-show settings modal if no API key configured
   if (!STATE.configured) {
     setTimeout(function() { settingsModal.classList.add('open'); }, 500);
   }
-}
+
+} catch(e) { console.error("init error:", e); } }
 
 // ===== Disclaimer =====
 var disclaimerModal = document.getElementById('disclaimerModal');

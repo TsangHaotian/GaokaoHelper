@@ -612,20 +612,129 @@ html, body {
 
 /* ===== Input ===== */
 .input-area {
-  display: flex;
-  gap: 8px;
-  padding: 10px 16px;
-  padding-bottom: calc(10px + var(--safe-bottom));
+  padding: 8px 16px;
+  padding-bottom: calc(8px + var(--safe-bottom));
   flex-shrink: 0;
   background: rgba(255,255,255,0.95);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-top: 0.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ===== Model Selector ===== */
+.model-selector-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.btn-model-select {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: var(--bg-page);
+  border: 0.5px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  height: 30px;
+}
+
+.btn-model-select:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.btn-model-select svg {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.model-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 4px;
+  min-width: 220px;
+  background: var(--white);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  z-index: 60;
+  display: none;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.model-dropdown.open {
+  display: block;
+}
+
+.model-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 13px;
+}
+
+.model-dropdown-item:hover {
+  background: var(--bg-hover);
+}
+
+.model-dropdown-item.active {
+  background: var(--bg-active);
+  font-weight: 600;
+}
+
+.model-dropdown-item .model-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.model-dropdown-item .model-name {
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.model-dropdown-item .model-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--bg-page);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.model-dropdown-item .model-check {
+  color: var(--accent);
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
 .chat-input {
-  flex: 1;
-  padding: 10px 14px;
+  display: block;
+  width: 100%;
+  padding: 9px 14px;
   background: var(--bg-page);
   border: 0.5px solid var(--border);
   border-radius: 20px;
@@ -634,7 +743,7 @@ html, body {
   font-family: var(--font);
   resize: none;
   outline: none;
-  min-height: 38px;
+  min-height: 36px;
   max-height: 100px;
   transition: border-color 0.2s;
   line-height: 1.4;
@@ -1038,11 +1147,11 @@ html, body {
 
   .chat-header-info { flex: 1; text-align: center; }
   .chat-header-info h1 { font-size: 15px; }
-  .chat-header-subtitle { display: none; }
+  .chat-header-subtitle { display: block; font-size: 10px; }
   .chat-header .mobile-only { flex-shrink: 0; }
   .chat-header .menu-wrap { flex-shrink: 0; }
 
   .messages { padding: 12px 12px; }
   .message { max-width: 92%; }
-  .input-area { padding: 10px 12px 14px; }
+  .input-area { padding: 8px 10px 12px; }
 }
