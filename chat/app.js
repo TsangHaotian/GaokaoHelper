@@ -628,7 +628,7 @@ async function sendGroupMessage(text) {
       body: JSON.stringify({
         model: cfg.model,
         messages: [
-          { role: 'user', content: (member.prompt ? member.prompt + '\n\n' : '') + promptText },
+          { role: 'user', content: (member.prompt ? member.prompt + '\n\n' : '') + '（群聊模式，请用1-3句话简洁回答，不要长篇大论）\n' + promptText },
         ],
         stream: true,
         max_tokens: cfg.maxTokens || 4096,
