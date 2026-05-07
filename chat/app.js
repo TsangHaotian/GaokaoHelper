@@ -126,7 +126,6 @@ const apiKeyInput       = $('apiKeyInput');
 const apiProviderSelect = $('apiProviderSelect');
 const apiKeyDesc        = $('apiKeyDesc');
 const saveKeyBtn        = $('saveKeyBtn');
-const activateBtn       = $('activateBtn');
 const getApiKeyBtn      = $('getApiKeyBtn');
 const editKeyBtn        = $('editKeyBtn');
 const statusDot         = $('statusDot');
@@ -901,11 +900,6 @@ async function init() { try {
     apiKeyInput.disabled = false; apiKeyInput.focus();
     saveKeyBtn.style.display = 'inline-block'; editKeyBtn.style.display = 'none';
     setStatus('inactive', '未设置');
-  });
-  activateBtn.addEventListener('click', function() {
-    saveProvider();
-    setStatus('active', '已激活：' + getProviderConfig().label);
-    modelIndicator.textContent = getProviderConfig().label;
   });
   getApiKeyBtn.addEventListener('click', function() {
     var urls = {
