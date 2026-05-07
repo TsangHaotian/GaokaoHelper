@@ -3,7 +3,7 @@ const API_PROVIDERS = {
   deepseek: {
     label: 'DeepSeek',
     baseUrl: 'https://api.deepseek.com',
-    model: 'deepseek-v4-flash',
+    model: 'deepseek-chat',
     keyPrefix: 'sk-',
     isFree: false,
     desc: '在 <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a> 获取 API Key',
@@ -571,13 +571,8 @@ async function sendSingleMessage(text) {
         var delta = parsed.choices && parsed.choices[0] && parsed.choices[0].delta ? (parsed.choices[0].delta.content || '') : '';
         if (delta) {
           fullContent += delta;
-          if (!renderTimeout) {
-            renderTimeout = setTimeout(function() {
-              var bubble = botDiv.querySelector('.bubble');
-              if (bubble) bubble.innerHTML = renderMarkdown(fullContent);
-              renderTimeout = null;
-            }, 50);
-          }
+          var bubble = botDiv.querySelector('.bubble');
+          if (bubble) bubble.innerHTML = renderMarkdown(fullContent);
           scrollToBottom();
         }
       } catch (e) { /* skip */ }
