@@ -455,15 +455,24 @@ html, body {
 .group-member-toggle-item {
   display: flex;
   align-items: center;
-  gap: 8px;
   padding: 6px 8px;
   border-radius: 8px;
   font-size: 13px;
-  justify-content: space-between;
+}
+
+.group-member-toggle-item .group-menu-member-tag-sm {
+  margin-right: 8px;
+  flex-shrink: 0;
 }
 
 .group-member-toggle-label {
   font-weight: 500;
+  flex: 1;
+}
+
+.group-member-toggle-item .toggle-switch {
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .group-menu-member-tag-sm {
