@@ -554,6 +554,90 @@ html, body {
 .status-dot.error { background: var(--danger); }
 .status-text { font-size: 12px; color: var(--text-muted); }
 
+/* ===== Group Chat ===== */
+.group-member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.group-member-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-page);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.group-member-item:hover {
+  background: var(--bg-hover);
+}
+
+.group-member-cb {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.group-member-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.group-member-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.bubble-skill-label {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.bubble-questioner {
+  font-style: italic;
+  color: var(--text-muted) !important;
+}
+
+.bubble-questioner .bubble-skill-label {
+  color: var(--text-muted);
+  border-bottom-color: transparent;
+}
+
+.setting-group-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
+.setting-group-check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 /* ===== Disclaimer ===== */
 #disclaimerModal.modal-overlay {
   background: rgba(255, 182, 193, 0.25);

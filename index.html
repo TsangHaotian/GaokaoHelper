@@ -84,7 +84,7 @@
     </main>
   </div>
 
-  <!-- 设置弹窗 -->
+  <!-- 设置弹窗（普通模式） -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal">
       <div class="modal-header">
@@ -115,6 +115,37 @@
               TsangHaotian/GaokaoHelper
             </a>
           </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 设置弹窗（群聊模式） -->
+  <div class="modal-overlay" id="groupSettingsModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>群聊设置</h2>
+        <button class="modal-close" id="closeGroupSettingsBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-group">
+          <label class="setting-label">选择参与群聊的角色</label>
+          <p class="setting-desc">勾选参与群聊的角色。</p>
+          <div class="group-member-list" id="groupMemberList"></div>
+        </div>
+        <div class="setting-group">
+          <label class="setting-label">AI 自由讨论轮数</label>
+          <p class="setting-desc">用户发送问题后，AI 角色之间自动对话的轮数。设为 0 则只有用户提问 + 各 AI 回答一轮。</p>
+          <div class="setting-input-row">
+            <input type="number" class="api-input" id="groupRoundInput" min="0" max="10" value="2" />
+          </div>
+        </div>
+        <div class="setting-group">
+          <label class="setting-group-check">
+            <input type="checkbox" id="groupQuestionerToggle" checked />
+            <span>启用「提问者」角色</span>
+          </label>
+          <p class="setting-desc">提问者是一个虚拟主持人角色，在对话间歇插入引导性问题，促成 AI 之间的讨论延续。提问者的发言会用斜体灰色标识。</p>
         </div>
       </div>
     </div>
