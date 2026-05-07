@@ -444,12 +444,17 @@ html, body {
 
 #groupMenuMemberList.group-only.visible {
   display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 4px 4px;
+  align-items: stretch;
 }
 
 #groupMenuMemberList {
   flex-direction: column;
   gap: 2px;
   padding: 0 4px 4px;
+  align-items: stretch;
 }
 
 .group-member-toggle-item {
