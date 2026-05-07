@@ -190,19 +190,22 @@ function updateGroupDropdownVisibility() {
   if (nd2) nd2.classList.toggle('visible', !isGroup);
 }
 
-function renderGroupMemberCheckboxes() {
+function renderGroupMemberToggles() {
   groupMenuMemberList.innerHTML = '';
   STATE.skills.forEach(function(skill) {
     var checked = STATE.groupMembers.some(function(m) { return m.name === skill.name; });
-    var label = document.createElement('label');
-    label.className = 'group-member-check-item';
-    label.innerHTML =
-      '<input type="checkbox" class="group-member-cb-sm" data-name="' + skill.name + '"' + (checked ? ' checked' : '') + '>' +
+    var item = document.createElement('div');
+    item.className = 'group-member-toggle-item';
+    item.innerHTML =
       '<span class="group-menu-member-tag-sm" style="background:' + skill.color + '">' + skill.label.charAt(0).toUpperCase() + '</span>' +
-      '<span>' + skill.label + '</span>';
-    groupMenuMemberList.appendChild(label);
+      '<span class="group-member-toggle-label">' + skill.label + '</span>' +
+      '<label class="toggle-switch toggle-switch-sm">' +
+        '<input type="checkbox" class="member-toggle-input" data-name="' + skill.name + '"' + (checked ? ' checked' : '') + '>' +
+        '<span class="toggle-slider"></span>' +
+      '</label>';
+    groupMenuMemberList.appendChild(item);
 
-    label.querySelector('.group-member-cb-sm').addEventListener('change', function(e) {
+    item.querySelector('.member-toggle-input').addEventListener('change', function(e) {
       var name = e.target.dataset.name;
       if (e.target.checked) {
         var s = STATE.skills.find(function(sk) { return sk.name === name; });
@@ -237,7 +240,7 @@ function selectSkill(name) {
     STATE.messages = loadMessages(GROUP_CHAT_NAME);
     renderSkillList();
     updateGroupDropdownVisibility();
-    renderGroupMemberCheckboxes();
+    renderGroupMemberToggles();
     updateGroupMenuText();
     updateUIForConfigured(STATE.configured);
     renderAllMessages();
@@ -725,7 +728,7 @@ async function init() {
 
   renderSkillList();
   updateGroupDropdownVisibility();
-  renderGroupMemberCheckboxes();
+  renderGroupMemberToggles();
   updateGroupMenuText();
   updateUIForConfigured(STATE.configured);
   renderAllMessages();

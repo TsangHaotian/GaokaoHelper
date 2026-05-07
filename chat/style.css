@@ -452,27 +452,18 @@ html, body {
   padding: 0 4px 4px;
 }
 
-.group-member-check-item {
+.group-member-toggle-item {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   gap: 8px;
   padding: 6px 8px;
   border-radius: 8px;
-  cursor: pointer;
   font-size: 13px;
-  transition: background 0.15s;
+  justify-content: space-between;
 }
 
-.group-member-check-item:hover {
-  background: var(--bg-hover);
-}
-
-.group-member-cb-sm {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--accent);
-  cursor: pointer;
+.group-member-toggle-label {
+  font-weight: 500;
 }
 
 .group-menu-member-tag-sm {
