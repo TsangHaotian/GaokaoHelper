@@ -9,6 +9,34 @@ const STATE = {
   activeSkill: null,
 };
 
+// ===== Storage =====
+function storageKey(name) { return 'chat_' + name; }
+
+function saveMessages() {
+  if (STATE.activeSkill) {
+    try {
+      localStorage.setItem(storageKey('msgs_' + STATE.activeSkill.name), JSON.stringify(STATE.messages));
+    } catch (e) { /* localStorage full */ }
+  }
+}
+
+function loadMessages(skillName) {
+  try {
+    var raw = localStorage.getItem(storageKey('msgs_' + skillName));
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) { return []; }
+}
+
+function saveActiveSkill() {
+  if (STATE.activeSkill) {
+    localStorage.setItem(storageKey('active_skill'), STATE.activeSkill.name);
+  }
+}
+
+function loadActiveSkillName() {
+  return localStorage.getItem(storageKey('active_skill')) || null;
+}
+
 // ===== DOM Refs =====
 const $ = (id) => document.getElementById(id);
 const apiKeyInput      = $('apiKeyInput');
@@ -79,14 +107,19 @@ function renderSkillList() {
 }
 
 function selectSkill(name) {
+  // Save current skill's messages
+  saveMessages();
+
   const skill = STATE.skills.find(s => s.name === name);
   if (!skill) return;
   STATE.activeSkill = { name: skill.name, label: skill.label, prompt: skill.prompt || '' };
   currentSkillName.textContent = skill.label;
+  // Load saved messages for this skill
+  STATE.messages = loadMessages(skill.name);
   renderSkillList();
   updateUIForConfigured(STATE.configured);
-  clearMessages();
-  addWelcomeMessage();
+  renderAllMessages();
+  saveActiveSkill();
 }
 
 // ===== Messages =====
@@ -110,6 +143,23 @@ function addWelcomeMessage() {
       '<p>' + (STATE.configured ? '你好！有什么可以帮你的？' : '请先配置 API Key 后开始聊天。') + '</p>' +
     '</div>';
   messagesEl.appendChild(div);
+}
+
+function renderAllMessages() {
+  messagesEl.innerHTML = '';
+  if (STATE.messages.length === 0) {
+    addWelcomeMessage();
+    return;
+  }
+  for (var i = 0; i < STATE.messages.length; i++) {
+    renderMessageDOM(STATE.messages[i].role, STATE.messages[i].content);
+  }
+  // Remove animation for batch render
+  var msgs = messagesEl.querySelectorAll('.message');
+  for (var j = 0; j < msgs.length; j++) {
+    msgs[j].style.animation = 'none';
+  }
+  scrollToBottom();
 }
 
 function renderMessageDOM(role, content) {
@@ -207,6 +257,7 @@ async function sendMessage() {
 
   STATE.messages.push({ role: 'user', content: text });
   renderMessageDOM('user', text);
+  saveMessages();
 
   STATE.loading = true;
   sendBtn.disabled = true;
@@ -287,12 +338,14 @@ async function sendMessage() {
     if (finalBubble) finalBubble.innerHTML = renderMarkdown(fullContent);
     var lastMsg = STATE.messages[STATE.messages.length - 1];
     if (lastMsg) lastMsg.content = fullContent;
+    saveMessages();
     scrollToBottom();
 
   } catch (err) {
     removeTypingIndicator();
     if (err.name !== 'AbortError') {
       renderMessageDOM('bot', '出错：' + err.message);
+      saveMessages();
     }
   } finally {
     STATE.loading = false;
@@ -341,15 +394,24 @@ async function init() {
   await scanSkills();
   loadSavedKey();
 
-  if (STATE.skills.length > 0) {
-    var first = STATE.skills[0];
-    STATE.activeSkill = { name: first.name, label: first.label, prompt: first.prompt || '' };
-    currentSkillName.textContent = first.label;
+  // Restore last active skill, or default to first
+  var savedSkillName = loadActiveSkillName();
+  var targetSkill = null;
+  if (savedSkillName) {
+    targetSkill = STATE.skills.find(function(s) { return s.name === savedSkillName; });
+  }
+  if (!targetSkill && STATE.skills.length > 0) {
+    targetSkill = STATE.skills[0];
+  }
+  if (targetSkill) {
+    STATE.activeSkill = { name: targetSkill.name, label: targetSkill.label, prompt: targetSkill.prompt || '' };
+    STATE.messages = loadMessages(targetSkill.name);
+    currentSkillName.textContent = targetSkill.label;
   }
 
   renderSkillList();
   updateUIForConfigured(STATE.configured);
-  addWelcomeMessage();
+  renderAllMessages();
 
   // Settings
   settingsBtn.addEventListener('click', function() { settingsModal.classList.add('open'); });
@@ -368,6 +430,7 @@ async function init() {
   // Clear
   clearBtn.addEventListener('click', function() {
     clearMessages();
+    saveMessages();
     addWelcomeMessage();
   });
 
