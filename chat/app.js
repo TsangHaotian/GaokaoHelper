@@ -6,6 +6,7 @@ const API_PROVIDERS = {
     model: 'deepseek-chat',
     keyPrefix: 'sk-',
     isFree: false,
+    capability: 'high',
     desc: '在 <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a> 获取 API Key',
   },
   moonshot: {
@@ -14,6 +15,7 @@ const API_PROVIDERS = {
     model: 'moonshot-v1-128k',
     keyPrefix: 'sk-',
     isFree: false,
+    capability: 'medium',
     desc: '在 <a href="https://platform.moonshot.cn/console" target="_blank">platform.moonshot.cn</a> 获取 API Key',
   },
   minimax: {
@@ -23,6 +25,7 @@ const API_PROVIDERS = {
     maxTokens: 2048,
     keyPrefix: 'sk-',
     isFree: false,
+    capability: 'low',
     desc: '在 <a href="https://platform.minimaxi.com" target="_blank">platform.minimaxi.com</a> 获取 API Key',
     note: '需在设置中填写 MiniMax 的 group_id',
   },
@@ -32,6 +35,7 @@ const API_PROVIDERS = {
     model: 'glm-4-flash',
     keyPrefix: '',
     isFree: true,
+    capability: 'low',
     desc: '完全免费！在 <a href="https://bigmodel.cn" target="_blank">bigmodel.cn</a> 注册获取 API Key（无需付费）',
   },
 };
@@ -628,7 +632,7 @@ async function sendGroupMessage(text) {
       body: JSON.stringify({
         model: cfg.model,
         messages: [
-          { role: 'user', content: (member.prompt ? member.prompt + '\n\n' : '') + '（群聊模式，请用1-3句话简洁回答，不要长篇大论）\n' + promptText },
+          { role: 'user', content: (member.prompt ? member.prompt + '\n\n' : '') + '(cfg.capability === 'high' ? '（群聊模式，请用1-3句话简洁回答）' : '（请简短回答）')\n' + promptText },
         ],
         stream: true,
         max_tokens: cfg.maxTokens || 4096,
