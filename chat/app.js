@@ -456,7 +456,10 @@ async function init() {
   renderAllMessages();
 
   // Settings
-  settingsBtn.addEventListener('click', function() { settingsModal.classList.add('open'); });
+  settingsBtn.addEventListener('click', function() {
+    closeSidebar();
+    setTimeout(function() { settingsModal.classList.add('open'); }, 200);
+  });
   closeSettingsBtn.addEventListener('click', function() { settingsModal.classList.remove('open'); });
   settingsModal.addEventListener('click', function(e) {
     if (e.target === settingsModal) settingsModal.classList.remove('open');
@@ -488,29 +491,35 @@ async function init() {
     dropdownMenu.classList.remove('open');
   });
 
+  // Create backdrop once
+  var backdrop = document.createElement('div');
+  backdrop.className = 'sidebar-backdrop';
+  backdrop.addEventListener('click', closeSidebar);
+  document.body.appendChild(backdrop);
+
+  function openSidebar() {
+    sidebar.classList.add('open');
+    backdrop.classList.add('open');
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('open');
+  }
+
   // Mobile sidebar toggle
   mobileToggle.addEventListener('click', function() {
-    sidebar.classList.toggle('open');
-    var backdrop = document.querySelector('.sidebar-backdrop');
-    if (!backdrop) {
-      backdrop = document.createElement('div');
-      backdrop.className = 'sidebar-backdrop';
-      backdrop.addEventListener('click', function() {
-        sidebar.classList.remove('open');
-        backdrop.classList.remove('open');
-      });
-      document.body.appendChild(backdrop);
+    if (sidebar.classList.contains('open')) {
+      closeSidebar();
+    } else {
+      openSidebar();
     }
-    backdrop.classList.toggle('open', sidebar.classList.contains('open'));
   });
 
-  // Close sidebar on skill select (mobile)
-  skillListEl.addEventListener('click', function() {
-    if (window.innerWidth <= 768) {
-      sidebar.classList.remove('open');
-      var bd = document.querySelector('.sidebar-backdrop');
-      if (bd) bd.classList.remove('open');
-    }
+  // Close sidebar when any skill-item is clicked (mobile)
+  skillListEl.addEventListener('click', function(e) {
+    var item = e.target.closest('.skill-item');
+    if (item) closeSidebar();
   });
 
   // Chat

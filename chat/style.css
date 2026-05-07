@@ -269,7 +269,7 @@ html, body {
   background: var(--danger);
 }
 
-#mobileToggle {
+.mobile-only {
   display: none;
 }
 
@@ -532,6 +532,13 @@ html, body {
 .setting-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
 .setting-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5; }
 .setting-desc a { color: var(--accent); text-decoration: none; }
+
+.repo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
 .setting-desc a:hover { text-decoration: underline; }
 .setting-input-row { margin-bottom: 12px; }
 
@@ -557,8 +564,8 @@ html, body {
 
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
-  #mobileToggle {
-    display: flex !important;
+  .mobile-only {
+    display: flex;
   }
 
   .sidebar {
@@ -588,7 +595,13 @@ html, body {
   }
 
   .chat-header {
-    padding: 10px 12px;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .chat-header-info {
+    flex: 1;
+    text-align: center;
   }
 
   .chat-header-info h1 {
@@ -597,6 +610,14 @@ html, body {
 
   .chat-header-subtitle {
     display: none;
+  }
+
+  .chat-header .mobile-only {
+    flex-shrink: 0;
+  }
+
+  .chat-header .menu-wrap {
+    flex-shrink: 0;
   }
 
   .messages {
