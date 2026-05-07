@@ -61,9 +61,15 @@ const dropdownMenu     = $('dropdownMenu');
 const clearBtn         = $('clearBtn');
 const skillInfoName    = $('skillInfoName');
 const skillInfoDesc    = $('skillInfoDesc');
-const repoLink         = $('repoLink');
+const skillRepoLink    = $('skillRepoLink');
+const skillRepoText    = $('skillRepoText');
 
 const AVATAR_COLORS = ['#1a73e8', '#e67e22', '#2ecc71', '#e74c3c', '#9b59b6', '#1abc9c', '#f39c12', '#3498db'];
+
+const SKILL_REPOS = {
+  'zhangxuefeng': 'https://github.com/alchaincyf/zhangxuefeng-skill',
+  'ZhangXueFeng-skill-main': 'https://github.com/a18515373115-droid/ZhangXueFeng-skill',
+};
 
 // ===== Scan Skills =====
 async function scanSkills() {
@@ -124,6 +130,14 @@ function selectSkill(name) {
   currentSkillName.textContent = skill.label;
   skillInfoName.textContent = skill.label;
   skillInfoDesc.textContent = '来自 skill/' + skill.name + '/SKILL.md';
+  var repo = SKILL_REPOS[skill.name];
+  if (repo) {
+    skillRepoLink.style.display = 'flex';
+    skillRepoText.textContent = repo;
+    skillRepoLink.onclick = function() { window.open(repo, '_blank'); dropdownMenu.classList.remove('open'); };
+  } else {
+    skillRepoLink.style.display = 'none';
+  }
   // Load saved messages for this skill
   STATE.messages = loadMessages(skill.name);
   renderSkillList();
@@ -419,6 +433,14 @@ async function init() {
     currentSkillName.textContent = targetSkill.label;
     skillInfoName.textContent = targetSkill.label;
     skillInfoDesc.textContent = '来自 skill/' + targetSkill.name + '/SKILL.md';
+    var repoInit = SKILL_REPOS[targetSkill.name];
+    if (repoInit) {
+      skillRepoLink.style.display = 'flex';
+      skillRepoText.textContent = repoInit;
+      skillRepoLink.onclick = function() { window.open(repoInit, '_blank'); dropdownMenu.classList.remove('open'); };
+    } else {
+      skillRepoLink.style.display = 'none';
+    }
   }
 
   renderSkillList();
@@ -455,12 +477,6 @@ async function init() {
     clearMessages();
     saveMessages();
     addWelcomeMessage();
-    dropdownMenu.classList.remove('open');
-  });
-
-  // Repo link
-  repoLink.addEventListener('click', function() {
-    window.open('https://github.com/TsangHaotian/GaokaoHelper', '_blank');
     dropdownMenu.classList.remove('open');
   });
 
