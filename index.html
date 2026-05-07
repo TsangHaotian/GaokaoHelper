@@ -78,6 +78,14 @@
               <span style="color:var(--text-secondary);font-size:12px;">群聊成员</span>
             </div>
             <div class="dropdown-item group-only" id="groupMenuMemberList"></div>
+            <div class="dropdown-item group-only clickable" id="groupMenuQuestionerSetting" style="padding: 2px 12px 6px; display:flex; align-items:center;">
+              <span class="group-menu-member-tag-sm" style="background:#bbb;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;flex-shrink:0;margin-right:8px;">?</span>
+              <span style="font-weight:500;flex:1;">提问者</span>
+              <label class="toggle-switch" id="questionerToggle" style="margin-left:auto;">
+                <input type="checkbox" id="questionerCheckbox" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
             <div class="dropdown-divider group-only" id="groupDivider2"></div>
             <div class="dropdown-item group-only clickable" id="groupMenuRoundSetting">
               <span id="groupMenuRoundText">讨论轮数：2</span>
@@ -86,14 +94,6 @@
                 <span id="roundDisplay" style="min-width:18px;text-align:center;font-weight:500;">2</span>
                 <button class="btn-round-adjust" id="roundInc">+</button>
               </div>
-            </div>
-            <div class="dropdown-item group-only clickable" id="groupMenuQuestionerSetting">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              <span>提问者</span>
-              <label class="toggle-switch" id="questionerToggle">
-                <input type="checkbox" id="questionerCheckbox" />
-                <span class="toggle-slider"></span>
-              </label>
             </div>
             <div class="dropdown-divider normal-only" id="normalDivider1"></div>
             <div class="dropdown-item normal-only skill-info-card">
