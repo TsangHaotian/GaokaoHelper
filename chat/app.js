@@ -523,6 +523,7 @@ async function sendSingleMessage(text) {
               renderTimeout = null;
             }, 50);
           }
+          scrollToBottom();
         }
       } catch (e) { /* skip */ }
     }
@@ -601,6 +602,7 @@ async function sendGroupMessage(text) {
               var labelText = member.label || (member === qMember ? '提问者' : '');
               var c = member === qMember ? '#999' : member.color;
               bubbleObj.bubbleEl.innerHTML = (labelText ? '<div class="bubble-skill-label" style="color:' + c + '">' + labelText + '</div>' : '') + renderMarkdown(fullContent);
+              scrollToBottom();
             }
           }
         } catch (e) { /* skip */ }
