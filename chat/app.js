@@ -619,8 +619,7 @@ async function sendGroupMessage(text) {
       body: JSON.stringify({
         model: cfg.model,
         messages: [
-          ...(member.prompt ? [{ role: 'system', content: member.prompt }] : []),
-          { role: 'user', content: promptText },
+          { role: 'user', content: (member.prompt ? member.prompt + '\n\n' : '') + promptText },
         ],
         stream: true,
         max_tokens: cfg.maxTokens || 4096,
