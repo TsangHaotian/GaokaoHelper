@@ -842,6 +842,7 @@ async function init() { try {
 
   function switchProvider(provider) {
     STATE.apiProvider = provider;
+    saveProvider();
     apiProviderSelect.value = provider;
     updateApiKeyDesc();
     apiKeyInput.value = '';
