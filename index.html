@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GaokaoAI</title>
+  <link rel="stylesheet" href="chat/style.css">
+</head>
+<body>
+  <div class="app">
+    <!-- 侧栏 - 角色列表 -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <span class="brand-logo">G</span>
+          <span class="brand-text">GaokaoAI</span>
+        </div>
+      </div>
+
+      <div class="skill-section">
+        <div class="section-label">角色</div>
+        <div class="skill-list" id="skillList"></div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="sidebar-btn sidebar-footer-btn" id="clearBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          <span>清空对话</span>
+        </button>
+        <button class="sidebar-btn sidebar-footer-btn" id="settingsBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <span>设置</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 主聊天区 -->
+    <main class="chat-main">
+      <div class="chat-header">
+        <div class="chat-header-info">
+          <h1 id="currentSkillName">请选择角色</h1>
+          <p class="chat-header-subtitle">基于 DeepSeek V4 Flash · 角色由 SKILL 定义</p>
+        </div>
+        <span class="status-badge" id="statusBadge">● 未配置 API</span>
+      </div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="input-area">
+        <textarea class="chat-input" id="chatInput" rows="1" placeholder="输入你的问题..." disabled></textarea>
+        <button class="btn btn-send" id="sendBtn" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <!-- 设置弹窗 -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>设置</h2>
+        <button class="modal-close" id="closeSettingsBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-group">
+          <label class="setting-label">DeepSeek API Key</label>
+          <p class="setting-desc">在 <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a> 获取，需使用 <strong>deepseek-chat</strong> 模型（V4 Flash）</p>
+          <div class="setting-input-row">
+            <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-..." />
+          </div>
+          <div class="setting-actions">
+            <button class="btn btn-primary" id="saveKeyBtn">保存</button>
+            <button class="btn btn-outline" id="editKeyBtn" style="display:none;">更换 Key</button>
+          </div>
+          <div class="setting-status">
+            <span class="status-dot" id="statusDot"></span>
+            <span class="status-text" id="statusText">未设置</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="chat/app.js"></script>
+</body>
+</html>
