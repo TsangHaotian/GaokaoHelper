@@ -690,7 +690,7 @@ async function sendGroupMessage(text) {
 
   // Questioner summarizes after round 0, before subsequent rounds
   if (withQuestioner && rounds > 0) {
-    var questionerPrompt = '你是群聊主持人。请先总结上述各方的核心观点，然后针对不同AI分别提出追问问题。每个问题要简短有针对性。\n\n对话历史：\n' + conversation.join('\n') + '\n\n请先总结各方观点，然后针对每个AI分别提出一个追问问题。';
+    var questionerPrompt = '你是群聊主持人。请先总结上述各方的核心观点，然后按以下格式输出追问：\n【AI名称】追问内容\n【AI名称】追问内容\n\n对话历史：\n' + conversation.join('\n') + '\n\n请先总结各方观点，然后按【AI名称】格式对每个AI提出一个追问。';
     var qObj = createStreamBubble('#bbb', '?', '提问者', true);
     var qAnswer = await callMemberStream(qMember, questionerPrompt, qObj);
     conversation.push('提问者：' + qAnswer);
@@ -702,7 +702,17 @@ async function sendGroupMessage(text) {
     if (withQuestioner) {
       for (var mj = 0; mj < members.length; mj++) {
         var bObj2 = createStreamBubble(members[mj].color, members[mj].label.charAt(0).toUpperCase(), members[mj].label, false);
-        var a = await callMemberStream(members[mj], qAnswer, bObj2);
+        // Extract question for this member from qAnswer
+        var memberQuestion = '';
+        var lines = qAnswer.split('\n');
+        for (var li = 0; li < lines.length; li++) {
+          if (lines[li].indexOf('【' + members[mj].label + '】') !== -1) {
+            memberQuestion = lines[li];
+            break;
+          }
+        }
+        var promptText = memberQuestion ? members[mj].label + '，请回答以下问题：\n' + memberQuestion : qAnswer;
+        var a = await callMemberStream(members[mj], promptText, bObj2);
         conversation.push(members[mj].label + '：' + a);
         allResults.push({ label: members[mj].label, content: a, isQuestioner: false });
       }
