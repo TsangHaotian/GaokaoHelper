@@ -1202,6 +1202,14 @@ html, body {
   .chat-header .mobile-only { flex-shrink: 0; }
   .chat-header .menu-wrap { flex-shrink: 0; }
 
+  /* 手机上 ... 菜单改为向上弹出，避免被输入框遮挡 */
+  .menu-wrap .dropdown-menu {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: 4px;
+  }
+
   .messages { padding: 12px 12px; }
   .message { max-width: 92%; }
   .input-area { padding: 8px 10px 12px; }
