@@ -596,6 +596,7 @@ async function sendSingleMessage(text) {
           if (msg) {
             searchResults = msg.content || '';
             console.log('[webSearch] 搜索结果长度:', searchResults.length);
+            console.log('[webSearch] 搜索结果前100字:', searchResults.substring(0, 100));
             if (!searchResults && msg.tool_calls) {
               searchResults = '搜索已完成，结果已整合到回答中。';
               console.log('[webSearch] 使用 tool_calls 占位');
