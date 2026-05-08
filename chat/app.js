@@ -34,6 +34,14 @@ const API_PROVIDERS = {
     isFree: true,
     desc: '完全免费！在 <a href="https://bigmodel.cn" target="_blank">bigmodel.cn</a> 注册获取 API Key（无需付费）',
   },
+  glm47: {
+    label: 'GLM-4.7-Flash',
+    baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+    model: 'glm-4.7-flash',
+    keyPrefix: '',
+    isFree: true,
+    desc: '完全免费！在 <a href="https://bigmodel.cn" target="_blank">bigmodel.cn</a> 注册获取 API Key（无需付费）',
+  },
 };
 
 // ===== State =====
@@ -929,6 +937,7 @@ async function init() { try {
       moonshot: 'guide/moonshot.html',
       minimax: 'guide/minimax.html',
       glm_free: 'guide/glm_free.html',
+      glm47: 'guide/glm_free.html',
     };
     var url = urls[STATE.apiProvider] || urls.deepseek;
     window.open(url, '_blank');
