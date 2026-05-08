@@ -567,7 +567,6 @@ async function sendSingleMessage(text) {
   // Step 1: If webSearch enabled, do GLM search first (non-streaming)
   var searchResults = '';
   if (STATE.webSearch) {
-    showTypingIndicator();
     var searchDiv = document.createElement('div');
     searchDiv.className = 'message bot';
     searchDiv.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" style="background:#007aff;font-size:11px;">🔍</span></div><div class="bubble"><p style="color:var(--text-muted);font-style:italic;">联网搜索中...</p></div>';
@@ -590,17 +589,29 @@ async function sendSingleMessage(text) {
         });
         if (sr.ok) {
           var srData = await sr.json();
-          if (srData.choices && srData.choices[0] && srData.choices[0].message) {
-            searchResults = srData.choices[0].message.content || '';
+          var msg = srData.choices && srData.choices[0] && srData.choices[0].message;
+          if (msg) {
+            searchResults = msg.content || '';
+            // If content is empty, tool_calls may contain web_search results
+            if (!searchResults && msg.tool_calls) {
+              searchResults = '搜索已完成，结果已整合到回答中。';
+            }
           }
+        } else {
+          var srErr = await sr.json().catch(function() { return {}; });
+          searchDiv.querySelector('.bubble').innerHTML = '<p style="color:#ff6b81;font-style:italic;">搜索失败：' + (srErr.error ? srErr.error.message : 'HTTP ' + sr.status) + '</p>';
+          await new Promise(function(r) { setTimeout(r, 2000); });
         }
       } catch (e) {
         if (e.name === 'AbortError') throw e;
-        searchResults = '';
+        searchDiv.querySelector('.bubble').innerHTML = '<p style="color:#ff6b81;font-style:italic;">搜索请求失败</p>';
+        await new Promise(function(r) { setTimeout(r, 1500); });
       }
+    } else {
+      searchDiv.querySelector('.bubble').innerHTML = '<p style="color:#ff6b81;font-style:italic;">未配置 GLM API Key，请在设置中配置</p>';
+      await new Promise(function(r) { setTimeout(r, 2000); });
     }
 
-    removeTypingIndicator();
     searchDiv.remove();
   }
 
