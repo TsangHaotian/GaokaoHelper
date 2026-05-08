@@ -5,6 +5,5 @@
   { "name": "parent", "label": "家长", "avatar": "img/父母.jpg" },
   { "name": "counselor", "label": "心理辅导员", "avatar": "img/心理辅导员.webp" },
   { "name": "career", "label": "职业规划师", "avatar": "img/职业规划师.jpg" },
-  { "name": "data-analyst", "label": "数据分析师", "avatar": "img/数据分析师.webp" },
-  { "name": "default", "label": "默认" }
+  { "name": "data-analyst", "label": "数据分析师", "avatar": "img/数据分析师.webp" }
 ]

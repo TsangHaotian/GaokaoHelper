@@ -595,8 +595,7 @@ async function sendSingleMessage(text) {
           var msg = srData.choices && srData.choices[0] && srData.choices[0].message;
           if (msg) {
             searchResults = msg.content || '';
-            console.log('[webSearch] 搜索结果长度:', searchResults.length);
-            console.log('[webSearch] 搜索结果前100字:', searchResults.substring(0, 100));
+            console.log('[webSearch] 搜索结果:', searchResults);
           }
         } else {
           var srErr = await sr.json().catch(function() { return {}; });
@@ -620,7 +619,9 @@ async function sendSingleMessage(text) {
   if (!STATE.configured) throw new Error('请先配置 API Key');
 
   if (searchResults) {
-    systemPrompt = (systemPrompt ? systemPrompt + '\n\n' : '') + '以下是针对用户问题联网搜索到的信息，请基于这些信息回答（可以补充你的知识）：\n' + searchResults;
+    systemPrompt = (systemPrompt ? systemPrompt + '\n\n' : '') + '以下是针对用户问题联网搜索到的信息，请严格基于这些信息回答，不要补充你自己的知识。如果搜索到的信息不足以回答用户问题，请如实告知用户搜索不到相关内容：\n' + searchResults;
+  } else if (STATE.webSearch) {
+    systemPrompt = (systemPrompt ? systemPrompt + '\n\n' : '') + '【联网搜索提示】本次未能搜索到有效结果，请直接告知用户"联网搜索没有找到相关信息"，不要用你自己的知识来回答。';
   }
   var body = {
     model: cfg.model,
