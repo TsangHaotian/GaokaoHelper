@@ -26,12 +26,21 @@
     /* 加载进度条 - JS 初始化完成后自动隐藏 */
     #loader-bar {
       position: fixed; top: 0; left: 0; right: 0;
+      z-index: 9999;
+    }
+    #loader-bar .bar {
       height: 3px;
       background: linear-gradient(90deg, #007aff, #34c759, #007aff);
       background-size: 200% 100%;
-      z-index: 9999;
-      transition: opacity 0.3s ease;
+      transition: width 0.2s ease;
       animation: loaderSlide 1.5s ease-in-out infinite;
+    }
+    #loader-bar .text {
+      text-align: center;
+      font-size: 12px;
+      color: #007aff;
+      margin-top: 8px;
+      font-weight: 500;
     }
     @keyframes loaderSlide {
       0% { background-position: 200% 0; }
@@ -43,7 +52,7 @@
   </style>
 </head>
 <body>
-  <div id="loader-bar"></div>
+  <div id="loader-bar"><div class="bar" style="width:10%"></div><div class="text">加载角色中...</div></div>
   <div class="app">
     <!-- 侧栏 - 角色列表 -->
     <aside class="sidebar">
@@ -51,7 +60,7 @@
         <div class="sidebar-brand">
           <span class="brand-logo">G</span>
           <span class="brand-text">GaokaoAI</span>
-          <span class="version-tag">v0.6.0</span>
+          <span class="version-tag">v0.6.1</span>
         </div>
       </div>
 

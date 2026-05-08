@@ -179,6 +179,13 @@ const SKILL_REPOS = {
 };
 
 // ===== Scan Skills =====
+function updateLoader(progress, text) {
+  var bar = document.querySelector('#loader-bar .bar');
+  var txt = document.querySelector('#loader-bar .text');
+  if (bar) bar.style.width = progress + '%';
+  if (txt) txt.textContent = text;
+}
+
 async function scanSkills() {
   try {
     const listResp = await fetch('skill/index.json?t=' + Date.now());
@@ -186,9 +193,11 @@ async function scanSkills() {
     const entries = await listResp.json();
     STATE.skills = [];
     let idx = 0;
+    const total = entries.length;
     for (const entry of entries) {
       const name = typeof entry === 'string' ? entry : entry.name;
       const label = typeof entry === 'string' ? name : (entry.label || name);
+      updateLoader(Math.round((idx / total) * 80) + 10, '加载角色：' + label);
       const sr = await fetch('skill/' + name + '/SKILL.md?t=' + Date.now());
       if (sr.ok) {
         const text = await sr.text();
@@ -196,6 +205,7 @@ async function scanSkills() {
         idx++;
       }
     }
+    updateLoader(90, '初始化中...');
   } catch (e) {
     console.warn('scanSkills failed:', e);
   }
@@ -1019,6 +1029,7 @@ async function init() { try {
     }
   }
 
+  updateLoader(100, '加载完成');
   var loaderBar = document.getElementById('loader-bar');
   if (loaderBar) { loaderBar.style.opacity = '0'; setTimeout(function() { loaderBar.remove(); }, 300); }
   document.querySelector('.app').classList.add('ready');
