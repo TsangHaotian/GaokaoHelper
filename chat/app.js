@@ -421,7 +421,8 @@ function renderAllMessages() {
     return;
   }
   for (var i = 0; i < STATE.messages.length; i++) {
-    renderMessageDOM(STATE.messages[i].role, STATE.messages[i].content, STATE.messages[i]._skillLabel, STATE.messages[i]._isQuestioner);
+    var isSearch = STATE.messages[i]._isSearch ? 'search' : STATE.messages[i]._isQuestioner;
+    renderMessageDOM(STATE.messages[i].role, STATE.messages[i].content, STATE.messages[i]._skillLabel, isSearch);
   }
   var msgs = messagesEl.querySelectorAll('.message');
   for (var j = 0; j < msgs.length; j++) {
@@ -436,6 +437,10 @@ function renderMessageDOM(role, content, skillLabel, isQuestioner) {
 
   if (role === 'user') {
     div.innerHTML = '<div class="msg-avatar"><span class="avatar-user">我</span></div><div class="bubble">' + renderMarkdown(content) + '</div>';
+  } else if (isQuestioner === 'search') {
+    div.innerHTML =
+      '<div class="msg-avatar"><span class="avatar-bot" style="background:#007aff;font-size:14px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔍</span></div>' +
+      '<div class="bubble"><div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(content) + '</div>';
   } else if (STATE.groupChatEnabled && skillLabel) {
     // Questioner
     if (isQuestioner) {
@@ -564,18 +569,18 @@ async function sendSingleMessage(text) {
   var cfg = getProviderConfig();
   var systemPrompt = STATE.activeSkill.prompt || '';
 
-  // Step 1: If webSearch enabled, do GLM search first (non-streaming)
+  // Step 1: If webSearch enabled, show 联网小助手 streaming search results
   var searchResults = '';
   if (STATE.webSearch) {
     console.log('[webSearch] 开始搜索，provider:', STATE.apiProvider);
+    var glmKey = localStorage.getItem('api_key_glm_free');
+
     var searchDiv = document.createElement('div');
     searchDiv.className = 'message bot';
-    searchDiv.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" style="background:#007aff;font-size:11px;">🔍</span></div><div class="bubble"><p style="color:var(--text-muted);font-style:italic;">联网搜索中...</p></div>';
+    searchDiv.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" style="background:#007aff;font-size:14px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔍</span></div><div class="bubble"><div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div><p style="color:var(--text-muted);font-style:italic;">正在搜索...</p></div>';
     messagesEl.appendChild(searchDiv);
     scrollToBottom();
 
-    var glmKey = localStorage.getItem('api_key_glm_free');
-    console.log('[webSearch] glmKey 是否存在:', !!glmKey);
     if (glmKey) {
       try {
         console.log('[webSearch] 开始请求 GLM...');
@@ -585,34 +590,53 @@ async function sendSingleMessage(text) {
           body: JSON.stringify({
             model: 'glm-4-flash',
             messages: [{ role: 'user', content: text }],
-            stream: false,
+            stream: true,
             tools: [{type: 'web_search', web_search: {search_query: text}}],
           }),
           signal: STATE.abortController.signal,
         });
         if (sr.ok) {
-          var srData = await sr.json();
-          var msg = srData.choices && srData.choices[0] && srData.choices[0].message;
-          if (msg) {
-            searchResults = msg.content || '';
-            console.log('[webSearch] 搜索结果:', searchResults);
+          var bubbleEl = searchDiv.querySelector('.bubble');
+          var reader = sr.body.getReader();
+          var decoder = new TextDecoder();
+          var buf = '';
+          var searchContent = '';
+          while (true) {
+            var r = await reader.read();
+            if (r.done) break;
+            buf += decoder.decode(r.value, { stream: true });
+            var lines = buf.split('\n');
+            buf = lines.pop() || '';
+            for (var li = 0; li < lines.length; li++) {
+              var trimmed = lines[li].trim();
+              if (!trimmed || trimmed.indexOf('data: ') !== 0) continue;
+              var data = trimmed.slice(6);
+              if (data === '[DONE]') continue;
+              try {
+                var parsed = JSON.parse(data);
+                var delta = parsed.choices && parsed.choices[0] && parsed.choices[0].delta ? (parsed.choices[0].delta.content || '') : '';
+                if (delta) {
+                  searchContent += delta;
+                  if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent);
+                  scrollToBottom();
+                }
+              } catch (e) { /* skip */ }
+            }
           }
+          searchResults = searchContent;
+          if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent) + '<div style="margin-top:8px;padding-top:6px;border-top:0.5px solid var(--border);font-size:11px;color:var(--text-muted);line-height:1.4;">💡 如果不需要联网搜索，请关闭输入框下方的联网按钮，可减少等待时间，提升对话流畅度。</div>';
+          console.log('[webSearch] 搜索结果:', searchResults);
         } else {
           var srErr = await sr.json().catch(function() { return {}; });
-          searchDiv.querySelector('.bubble').innerHTML = '<p style="color:#ff6b81;font-style:italic;">搜索失败：' + (srErr.error ? srErr.error.message : 'HTTP ' + sr.status) + '</p>';
-          await new Promise(function(r) { setTimeout(r, 2000); });
+          searchDiv.querySelector('.bubble').innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div><p style="color:#ff6b81;font-style:italic;">搜索失败：' + (srErr.error ? srErr.error.message : 'HTTP ' + sr.status) + '</p>';
         }
       } catch (e) {
         if (e.name === 'AbortError') throw e;
-        searchDiv.querySelector('.bubble').innerHTML = '<p style="color:#ff6b81;font-style:italic;">搜索请求失败</p>';
-        await new Promise(function(r) { setTimeout(r, 1500); });
+        searchDiv.querySelector('.bubble').innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div><p style="color:#ff6b81;font-style:italic;">搜索请求失败</p>';
       }
     } else {
-      searchDiv.querySelector('.bubble').innerHTML = '<p style="color:#ff6b81;font-style:italic;">未配置 GLM API Key，请在设置中配置</p>';
-      await new Promise(function(r) { setTimeout(r, 2000); });
+      searchDiv.querySelector('.bubble').innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div><p style="color:#ff6b81;font-style:italic;">未配置 GLM API Key</p>';
     }
-
-    searchDiv.remove();
   }
 
   // Step 2: Build the actual request for the user's chosen model
@@ -685,6 +709,10 @@ async function sendSingleMessage(text) {
   if (finalBubble) finalBubble.innerHTML = renderMarkdown(fullContent);
   var lastMsg = STATE.messages[STATE.messages.length - 1];
   if (lastMsg) lastMsg.content = fullContent;
+  // Save search assistant message before main AI message
+  if (searchResults) {
+    STATE.messages.push({ role: 'assistant', content: searchResults, _isSearch: true });
+  }
   saveMessages();
   scrollToBottom();
 }
@@ -698,10 +726,15 @@ async function sendGroupMessage(text) {
   // Stores the conversation so far for context in subsequent rounds
   var conversation = [];
 
-  // If webSearch enabled, do one GLM search and cache results
+  // If webSearch enabled, show 联网小助手 streaming search
   var searchResults = '';
   if (STATE.webSearch) {
     var glmKey = localStorage.getItem('api_key_glm_free');
+    var searchDiv = document.createElement('div');
+    searchDiv.className = 'message bot';
+    searchDiv.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" style="background:#007aff;font-size:14px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔍</span></div><div class="bubble"><div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div><p style="color:var(--text-muted);font-style:italic;">正在搜索...</p></div>';
+    messagesEl.appendChild(searchDiv);
+    scrollToBottom();
     if (glmKey) {
       try {
         var sr = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
@@ -710,20 +743,48 @@ async function sendGroupMessage(text) {
           body: JSON.stringify({
             model: 'glm-4-flash',
             messages: [{ role: 'user', content: text }],
-            stream: false,
+            stream: true,
             tools: [{type: 'web_search', web_search: {search_query: text}}],
           }),
           signal: STATE.abortController.signal,
         });
         if (sr.ok) {
-          var srData = await sr.json();
-          if (srData.choices && srData.choices[0] && srData.choices[0].message) {
-            searchResults = srData.choices[0].message.content || '';
+          var bubbleEl = searchDiv.querySelector('.bubble');
+          var reader = sr.body.getReader();
+          var decoder = new TextDecoder();
+          var buf = '';
+          var searchContent = '';
+          while (true) {
+            var r = await reader.read();
+            if (r.done) break;
+            buf += decoder.decode(r.value, { stream: true });
+            var lines = buf.split('\n');
+            buf = lines.pop() || '';
+            for (var li = 0; li < lines.length; li++) {
+              var trimmed = lines[li].trim();
+              if (!trimmed || trimmed.indexOf('data: ') !== 0) continue;
+              var data = trimmed.slice(6);
+              if (data === '[DONE]') continue;
+              try {
+                var parsed = JSON.parse(data);
+                var delta = parsed.choices && parsed.choices[0] && parsed.choices[0].delta ? (parsed.choices[0].delta.content || '') : '';
+                if (delta) {
+                  searchContent += delta;
+                  if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent);
+                  scrollToBottom();
+                }
+              } catch (e) { /* skip */ }
+            }
           }
+          searchResults = searchContent;
+          if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent) + '<div style="margin-top:8px;padding-top:6px;border-top:0.5px solid var(--border);font-size:11px;color:var(--text-muted);line-height:1.4;">💡 如果不需要联网搜索，请关闭输入框下方的联网按钮，可减少等待时间，提升对话流畅度。</div>';
         }
       } catch (e) {
         if (e.name === 'AbortError') throw e;
+        searchDiv.querySelector('.bubble').innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div><p style="color:#ff6b81;font-style:italic;">搜索请求失败</p>';
       }
+    } else {
+      searchDiv.querySelector('.bubble').innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div><p style="color:#ff6b81;font-style:italic;">未配置 GLM API Key</p>';
     }
   }
 
