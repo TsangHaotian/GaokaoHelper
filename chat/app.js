@@ -567,6 +567,7 @@ async function sendSingleMessage(text) {
   // Step 1: If webSearch enabled, do GLM search first (non-streaming)
   var searchResults = '';
   if (STATE.webSearch) {
+    console.log('[webSearch] 开始搜索，provider:', STATE.apiProvider);
     var searchDiv = document.createElement('div');
     searchDiv.className = 'message bot';
     searchDiv.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" style="background:#007aff;font-size:11px;">🔍</span></div><div class="bubble"><p style="color:var(--text-muted);font-style:italic;">联网搜索中...</p></div>';
@@ -574,9 +575,15 @@ async function sendSingleMessage(text) {
     scrollToBottom();
 
     var glmKey = localStorage.getItem('api_key_glm_free');
+    console.log('[webSearch] glmKey 是否存在:', !!glmKey);
     if (glmKey) {
       try {
-        var sr = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+        console.log('[webSearch] 开始请求 GLM...');
+        var glmUrl = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+        if (location.protocol !== 'https:' && location.hostname === '127.0.0.1') {
+          glmUrl = 'https://corsproxy.io/?' + encodeURIComponent(glmUrl);
+        }
+        var sr = await fetch(glmUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + glmKey },
           body: JSON.stringify({
