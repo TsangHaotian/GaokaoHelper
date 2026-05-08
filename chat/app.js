@@ -1019,7 +1019,10 @@ async function init() { try {
     }
   }
 
-} catch(e) { console.error("init error:", e); } }
+  var loaderBar = document.getElementById('loader-bar');
+  if (loaderBar) { loaderBar.style.opacity = '0'; setTimeout(function() { loaderBar.remove(); }, 300); }
+  document.querySelector('.app').classList.add('ready');
+} catch(e) { console.error("init error:", e); document.querySelector('.app').classList.add('ready'); } }
 
 // ===== Disclaimer =====
 var disclaimerModal = document.getElementById('disclaimerModal');

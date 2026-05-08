@@ -11,7 +11,7 @@
   <title>GaokaoAI · AI 智聊</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23007aff'/%3E%3Ctext x='50' y='68' text-anchor='middle' fill='white' font-size='48' font-weight='700' font-family='sans-serif'%3EG%3C/text%3E%3C/svg%3E">
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23007aff'/%3E%3Ctext x='50' y='68' text-anchor='middle' fill='white' font-size='48' font-weight='700' font-family='sans-serif'%3EG%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="chat/style.css?v=0.5.8">
+  <link rel="stylesheet" href="chat/style.css?v=0.5.9">
   <link rel="manifest" href="manifest.json">
   <style>
     /* PWA splash screen */
@@ -22,9 +22,28 @@
       z-index: -1;
       background: linear-gradient(180deg, #f2f2f7 0%, #ffffff 100%);
     }
+
+    /* 加载进度条 - JS 初始化完成后自动隐藏 */
+    #loader-bar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #007aff, #34c759, #007aff);
+      background-size: 200% 100%;
+      z-index: 9999;
+      transition: opacity 0.3s ease;
+      animation: loaderSlide 1.5s ease-in-out infinite;
+    }
+    @keyframes loaderSlide {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .app { opacity: 0; transition: opacity 0.2s ease; }
+    .app.ready { opacity: 1; }
   </style>
 </head>
 <body>
+  <div id="loader-bar"></div>
   <div class="app">
     <!-- 侧栏 - 角色列表 -->
     <aside class="sidebar">
@@ -32,7 +51,7 @@
         <div class="sidebar-brand">
           <span class="brand-logo">G</span>
           <span class="brand-text">GaokaoAI</span>
-          <span class="version-tag">v0.5.8</span>
+          <span class="version-tag">v0.6.0</span>
         </div>
       </div>
 
@@ -211,6 +230,6 @@
     </div>
   </div>
 
-  <script src="chat/app.js?v=0.5.8"></script>
+  <script src="chat/app.js?v=0.5.9"></script>
 </body>
 </html>
