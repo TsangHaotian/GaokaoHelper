@@ -579,18 +579,14 @@ async function sendSingleMessage(text) {
     if (glmKey) {
       try {
         console.log('[webSearch] 开始请求 GLM...');
-        var glmUrl = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
-        if (location.protocol !== 'https:' && location.hostname === '127.0.0.1') {
-          glmUrl = 'https://corsproxy.io/?' + encodeURIComponent(glmUrl);
-        }
-        var sr = await fetch(glmUrl, {
+        var sr = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + glmKey },
           body: JSON.stringify({
             model: 'glm-4-flash',
             messages: [{ role: 'user', content: text }],
             stream: false,
-            tools: [{type: 'web_search', web_search: {}}],
+            tools: [{type: 'web_search', web_search: {search_query: text}}],
           }),
           signal: STATE.abortController.signal,
         });
@@ -718,7 +714,7 @@ async function sendGroupMessage(text) {
             model: 'glm-4-flash',
             messages: [{ role: 'user', content: text }],
             stream: false,
-            tools: [{type: 'web_search', web_search: {}}],
+            tools: [{type: 'web_search', web_search: {search_query: text}}],
           }),
           signal: STATE.abortController.signal,
         });
