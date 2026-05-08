@@ -286,7 +286,7 @@ html, body {
   border: 0.5px solid var(--border);
   border-radius: 14px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-  z-index: 50;
+  z-index: 999;
   display: none;
   padding: 4px;
 }
@@ -1202,13 +1202,6 @@ html, body {
   .chat-header .mobile-only { flex-shrink: 0; }
   .chat-header .menu-wrap { flex-shrink: 0; }
 
-  /* 手机上 ... 菜单改为向上弹出，避免被输入框遮挡 */
-  .menu-wrap .dropdown-menu {
-    top: auto;
-    bottom: 100%;
-    margin-top: 0;
-    margin-bottom: 4px;
-  }
 
   .messages { padding: 12px 12px; }
   .message { max-width: 92%; }
