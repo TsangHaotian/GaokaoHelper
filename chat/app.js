@@ -385,7 +385,7 @@ var WELCOME_TEXTS = {
   'parent': '孩子啊，爸妈来了。\n你这选学校选专业的事儿，爸妈帮不上什么大忙，但有些话想跟你说说。\n你自己是怎么想的？跟爸妈唠唠？',
   'counselor': '你好呀，我是心理辅导员。\n高考完了，各种情绪涌上来了是吧？焦虑、迷茫、害怕选错——这些都很正常。\n如果你愿意，可以跟我说说你现在的心情。',
   'career': '你好，我是职业规划师。\n我不只看你眼前的分数和学校——我更关心的是：10年后你想过什么样的生活？\�有什么关于未来的想法，说说看，我们一起理一理。',
-  'data-analyst': '你好，我是数据分析师。\n我不凭感觉给建议，一切靠数据说话。\n不过我的知识有截止日期，最新的数据需要你来提供。\n你可以告诉我你想了解什么方向，我告诉你去哪找数据、怎么分析。',
+  'data-analyst': '你好，我是数据分析师。\n我不凭感觉给建议，一切靠数据说话。\n当用户开启联网搜索时，系统会调用 GLM-4-Flash 获取最新数据提供给我分析。\n你想了解什么方向？我帮你找数据、做分析。',
 };
 
 function addWelcomeMessage() {
@@ -622,8 +622,9 @@ async function sendSingleMessage(text) {
     model: cfg.model,
     messages: [
       ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
-      ...(searchResults ? [{ role: 'system', content: '【系统通知】用户已开启联网搜索功能，以下是通过外部搜索引擎获取到的实时信息，请仔细阅读理解并根据这些内容回答用户问题。你本身不具备联网能力，但现在这些搜索结果已经提供给你了，请基于这些信息回答：\n' + searchResults }] : []),
-      ...(STATE.webSearch && !searchResults ? [{ role: 'system', content: '【系统通知】用户已开启联网搜索功能，但本次搜索没有获取到有效结果，请如实告知用户搜索不到相关信息。' }] : []),
+      ...(searchResults ? [{ role: 'system', content: '【AI 规则 - 已开启联网搜索】\n1. 你本身不具备联网能力，以下信息是系统调用 GLM-4-Flash 联网搜索 API 获取到的。\n2. 请仔细阅读搜索结果，确保回答与用户问题一致。\n3. 如果搜索结果与用户问题不匹配（可能因关键词问题导致），不要直接附和，应告知用户注意。\n4. 基于搜索结果回答即可，不需要扮演有联网能力的角色。\n\n【搜索结果】\n' + searchResults }] : []),
+      ...(STATE.webSearch && !searchResults ? [{ role: 'system', content: '【AI 规则 - 联网搜索无结果】\n已调用 GLM-4-Flash 联网搜索 API 但未获取到有效结果，请如实告知用户搜索不到相关信息，不要自行编造。' }] : []),
+      ...(!STATE.webSearch ? [{ role: 'system', content: '【AI 规则 - 未开启联网搜索】\n1. 你只能基于自身训练知识回答。\n2. 对于大学录取分数线、各省录取分数线等具体数据，必须声明"此为本人知识范围内的信息，建议开启联网搜索获取最新数据"。\n3. 严禁编造任何大学录取数据或省份录取分数线。\n4. 对于不确定的信息，如实告知用户。' }] : []),
       ...STATE.messages,
     ],
     stream: true,
