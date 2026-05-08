@@ -165,11 +165,9 @@ const groupDivider2     = $('groupDivider2');
 const groupMenuMembers  = $('groupMenuMembers');
 const groupMenuMemberList = $('groupMenuMemberList');
 const groupMenuRoundText = $('groupMenuRoundText');
-const questionerCheckbox = $('questionerCheckbox');
 const roundDisplay      = $('roundDisplay');
 const roundDec          = $('roundDec');
 const roundInc          = $('roundInc');
-const groupMenuQuestionerSetting = $('groupMenuQuestionerSetting');
 
 const AVATAR_COLORS = ['#1a73e8', '#e67e22', '#2ecc71', '#e74c3c', '#9b59b6', '#1abc9c', '#f39c12', '#3498db'];
 
@@ -259,15 +257,78 @@ function updateGroupDropdownVisibility() {
 
 function renderGroupMemberToggles() {
   groupMenuMemberList.innerHTML = '';
-  STATE.skills.forEach(function(skill) {
-    var checked = STATE.groupMembers.some(function(m) { return m.name === skill.name; });
+
+  // Render selected members first (draggable)
+  STATE.groupMembers.forEach(function(member, idx) {
+    var skill = STATE.skills.find(function(s) { return s.name === member.name; });
+    if (!skill) return;
     var item = document.createElement('div');
     item.className = 'group-member-toggle-item';
+    item.draggable = true;
+    item.dataset.index = idx;
     item.innerHTML =
+      '<span class="drag-handle" style="cursor:grab;color:var(--text-muted);font-size:12px;margin-right:2px;">⠿</span>' +
       '<span class="group-menu-member-tag-sm" style="background:' + skill.color + '">' + skill.label.charAt(0).toUpperCase() + '</span>' +
       '<span class="group-member-toggle-label">' + skill.label + '</span>' +
       '<label class="toggle-switch toggle-switch-sm">' +
-        '<input type="checkbox" class="member-toggle-input" data-name="' + skill.name + '"' + (checked ? ' checked' : '') + '>' +
+        '<input type="checkbox" class="member-toggle-input" data-name="' + skill.name + '" checked>' +
+        '<span class="toggle-slider"></span>' +
+      '</label>';
+    groupMenuMemberList.appendChild(item);
+
+    // Drag events
+    item.addEventListener('dragstart', function(e) {
+      e.dataTransfer.setData('text/plain', idx);
+      item.style.opacity = '0.4';
+    });
+    item.addEventListener('dragend', function() {
+      item.style.opacity = '1';
+    });
+    item.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      var items = groupMenuMemberList.children;
+      for (var i = 0; i < items.length; i++) items[i].classList.remove('drag-over');
+      item.classList.add('drag-over');
+    });
+    item.addEventListener('dragleave', function() {
+      item.classList.remove('drag-over');
+    });
+    item.addEventListener('drop', function(e) {
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      var fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+      var toIdx = parseInt(item.dataset.index);
+      if (fromIdx === toIdx) return;
+      var m = STATE.groupMembers.splice(fromIdx, 1)[0];
+      STATE.groupMembers.splice(toIdx, 0, m);
+      saveGroupMembers();
+      renderGroupMemberToggles();
+    });
+
+    item.querySelector('.member-toggle-input').addEventListener('change', function(e) {
+      var name = e.target.dataset.name;
+      STATE.groupMembers = STATE.groupMembers.filter(function(m) { return m.name !== name; });
+      saveGroupMembers();
+      renderGroupMemberToggles();
+    });
+  });
+
+  // Divider
+  var divider = document.createElement('div');
+  divider.style.cssText = 'border-top:0.5px solid var(--border);margin:4px 0;';
+  groupMenuMemberList.appendChild(divider);
+
+  // Render unselected skills below
+  STATE.skills.forEach(function(skill) {
+    if (STATE.groupMembers.some(function(m) { return m.name === skill.name; })) return;
+    var item = document.createElement('div');
+    item.className = 'group-member-toggle-item';
+    item.innerHTML =
+      '<span style="width:16px;flex-shrink:0;"></span>' +
+      '<span class="group-menu-member-tag-sm" style="background:' + skill.color + ';opacity:0.5;">' + skill.label.charAt(0).toUpperCase() + '</span>' +
+      '<span class="group-member-toggle-label" style="opacity:0.5;">' + skill.label + '</span>' +
+      '<label class="toggle-switch toggle-switch-sm">' +
+        '<input type="checkbox" class="member-toggle-input" data-name="' + skill.name + '">' +
         '<span class="toggle-slider"></span>' +
       '</label>';
     groupMenuMemberList.appendChild(item);
@@ -276,21 +337,39 @@ function renderGroupMemberToggles() {
       var name = e.target.dataset.name;
       if (e.target.checked) {
         var s = STATE.skills.find(function(sk) { return sk.name === name; });
-        if (s && !STATE.groupMembers.some(function(m) { return m.name === name; })) {
+        if (s) {
           STATE.groupMembers.push({ name: s.name, label: s.label, prompt: s.prompt, color: s.color });
         }
-      } else {
-        STATE.groupMembers = STATE.groupMembers.filter(function(m) { return m.name !== name; });
       }
       saveGroupMembers();
+      renderGroupMemberToggles();
     });
+  });
+
+  // Questioner toggle at bottom
+  var qItem = document.createElement('div');
+  qItem.className = 'group-member-toggle-item';
+  qItem.innerHTML =
+    '<span style="width:16px;flex-shrink:0;"></span>' +
+    '<span class="group-menu-member-tag-sm" style="background:#bbb;">?</span>' +
+    '<span class="group-member-toggle-label">提问者</span>' +
+    '<label class="toggle-switch toggle-switch-sm">' +
+      '<input type="checkbox" id="questionerCheckbox"' + (STATE.groupQuestioner ? ' checked' : '') + '>' +
+      '<span class="toggle-slider"></span>' +
+    '</label>';
+  groupMenuMemberList.appendChild(qItem);
+
+  qItem.querySelector('.toggle-switch input').addEventListener('change', function(e) {
+    STATE.groupQuestioner = e.target.checked;
+    saveGroupSettings();
   });
 }
 
 function updateGroupMenuText() {
   groupMenuRoundText.textContent = '讨论轮数：' + STATE.groupRounds;
   roundDisplay.textContent = STATE.groupRounds;
-  questionerCheckbox.checked = STATE.groupQuestioner;
+  var qCheckbox = document.getElementById('questionerCheckbox');
+  if (qCheckbox) qCheckbox.checked = STATE.groupQuestioner;
 }
 
 // ===== Skill Selection =====
@@ -848,13 +927,11 @@ async function init() { try {
 
   // Group chat settings in dropdown
   function toggleQuestioner() {
-    STATE.groupQuestioner = questionerCheckbox.checked;
+    var cb = document.getElementById('questionerCheckbox');
+    if (cb) STATE.groupQuestioner = cb.checked;
     saveGroupSettings();
     updateGroupMenuText();
   }
-
-  // Sync checkbox on change
-  questionerCheckbox.addEventListener('change', toggleQuestioner);
 
   var roundChangeTimer = null;
   function setRounds(val) {
@@ -868,7 +945,6 @@ async function init() { try {
 
   roundDec.addEventListener('click', function(e) { e.stopPropagation(); setRounds(STATE.groupRounds - 1); });
   roundInc.addEventListener('click', function(e) { e.stopPropagation(); setRounds(STATE.groupRounds + 1); });
-  groupMenuQuestionerSetting.addEventListener('click', toggleQuestioner);
 
   function switchProvider(provider) {
     STATE.apiProvider = provider;
