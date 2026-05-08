@@ -681,6 +681,37 @@ html, body {
   opacity: 0.6;
 }
 
+.btn-web-search {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: var(--bg-page);
+  border: 0.5px solid var(--border);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  height: 30px;
+  margin-left: 4px;
+}
+.btn-web-search:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.btn-web-search.active {
+  background: #e8f5e9;
+  border-color: #34c759;
+  color: #34c759;
+}
+.btn-web-search.active:hover {
+  background: #d0ebd4;
+}
+
 .model-dropdown {
   position: absolute;
   bottom: 100%;

@@ -59,6 +59,7 @@ const STATE = {
   groupMembers: [],
   groupRounds: 2,
   groupQuestioner: true,
+  webSearch: false,
 };
 
 const GROUP_CHAT_NAME = '__group_chat__';
@@ -114,6 +115,13 @@ function loadGroupRounds() {
 
 function loadGroupQuestioner() {
   try { var v = localStorage.getItem(storageKey('group_questioner')); return v !== '0'; } catch (e) { return true; }
+}
+
+function saveWebSearch() {
+  localStorage.setItem(storageKey('web_search'), STATE.webSearch ? '1' : '0');
+}
+function loadWebSearch() {
+  try { var v = localStorage.getItem(storageKey('web_search')); return v === '1'; } catch (e) { return false; }
 }
 
 function saveProvider() {
@@ -439,7 +447,7 @@ function renderMessageDOM(role, content, skillLabel, isQuestioner) {
       var groupSkill = STATE.groupMembers.find(function(m) { return m.label === skillLabel; }) || STATE.skills.find(function(s) { return s.label === skillLabel; });
       div.innerHTML =
         '<div class="msg-avatar"><span class="avatar-bot" ' + avatarHtml(groupSkill, {size:32}) + '</span></div>' +
-        '<div class="bubble"><div class="bubble-skill-label" style="color:' + gColor + '">' + skillLabel + '</div>' + renderMarkdown(content) + '</div>';
+        '<div class="bubble"><div class="bubble-skill-label" style="color:' + (groupSkill ? groupSkill.color : '#8e44ad') + '">' + skillLabel + '</div>' + renderMarkdown(content) + '</div>';
     }
   } else {
     var skill = STATE.skills.find(function(s) { return s.name === (STATE.activeSkill ? STATE.activeSkill.name : null); });
@@ -553,22 +561,69 @@ async function sendMessage() {
 }
 
 async function sendSingleMessage(text) {
-  showTypingIndicator();
   var cfg = getProviderConfig();
   var systemPrompt = STATE.activeSkill.prompt || '';
+
+  // Step 1: If webSearch enabled, do GLM search first (non-streaming)
+  var searchResults = '';
+  if (STATE.webSearch) {
+    showTypingIndicator();
+    var searchDiv = document.createElement('div');
+    searchDiv.className = 'message bot';
+    searchDiv.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" style="background:#007aff;font-size:11px;">🔍</span></div><div class="bubble"><p style="color:var(--text-muted);font-style:italic;">联网搜索中...</p></div>';
+    messagesEl.appendChild(searchDiv);
+    scrollToBottom();
+
+    var glmKey = localStorage.getItem('api_key_glm_free');
+    if (glmKey) {
+      try {
+        var sr = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + glmKey },
+          body: JSON.stringify({
+            model: 'glm-4-flash',
+            messages: [{ role: 'user', content: text }],
+            stream: false,
+            tools: [{type: 'web_search', web_search: {}}],
+          }),
+          signal: STATE.abortController.signal,
+        });
+        if (sr.ok) {
+          var srData = await sr.json();
+          if (srData.choices && srData.choices[0] && srData.choices[0].message) {
+            searchResults = srData.choices[0].message.content || '';
+          }
+        }
+      } catch (e) {
+        if (e.name === 'AbortError') throw e;
+        searchResults = '';
+      }
+    }
+
+    removeTypingIndicator();
+    searchDiv.remove();
+  }
+
+  // Step 2: Build the actual request for the user's chosen model
+  if (!STATE.configured) throw new Error('请先配置 API Key');
+
+  if (searchResults) {
+    systemPrompt = (systemPrompt ? systemPrompt + '\n\n' : '') + '以下是针对用户问题联网搜索到的信息，请基于这些信息回答（可以补充你的知识）：\n' + searchResults;
+  }
+  var body = {
+    model: cfg.model,
+    messages: [
+      ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
+      ...STATE.messages,
+    ],
+    stream: true,
+    max_tokens: cfg.maxTokens || 4096,
+    temperature: 1.0,
+  };
   var resp = await fetch(cfg.baseUrl + '/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + STATE.apiKey },
-    body: JSON.stringify({
-      model: cfg.model,
-      messages: [
-        ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
-        ...STATE.messages,
-      ],
-      stream: true,
-      max_tokens: cfg.maxTokens || 4096,
-      temperature: 1.0,
-    }),
+    body: JSON.stringify(body),
     signal: STATE.abortController.signal,
   });
 
@@ -632,6 +687,35 @@ async function sendGroupMessage(text) {
   // Stores the conversation so far for context in subsequent rounds
   var conversation = [];
 
+  // If webSearch enabled, do one GLM search and cache results
+  var searchResults = '';
+  if (STATE.webSearch) {
+    var glmKey = localStorage.getItem('api_key_glm_free');
+    if (glmKey) {
+      try {
+        var sr = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + glmKey },
+          body: JSON.stringify({
+            model: 'glm-4-flash',
+            messages: [{ role: 'user', content: text }],
+            stream: false,
+            tools: [{type: 'web_search', web_search: {}}],
+          }),
+          signal: STATE.abortController.signal,
+        });
+        if (sr.ok) {
+          var srData = await sr.json();
+          if (srData.choices && srData.choices[0] && srData.choices[0].message) {
+            searchResults = srData.choices[0].message.content || '';
+          }
+        }
+      } catch (e) {
+        if (e.name === 'AbortError') throw e;
+      }
+    }
+  }
+
   function createStreamBubble(member, labelText, isQuestioner) {
     var div = document.createElement('div');
     div.className = 'message bot' + (isQuestioner ? ' bubble-questioner' : '');
@@ -646,18 +730,23 @@ async function sendGroupMessage(text) {
 
   async function callMemberStream(member, promptText, bubbleObj) {
     var cfg = getProviderConfig();
+    var memberPrompt = member.prompt || '';
+    if (searchResults) {
+      memberPrompt = (memberPrompt ? memberPrompt + '\n\n' : '') + '以下是针对讨论主题联网搜索到的信息（供参考）：\n' + searchResults;
+    }
+    var body = {
+      model: cfg.model,
+      messages: [
+        { role: 'user', content: (memberPrompt ? memberPrompt + '\n\n' : '') + '（群聊模式，请用1-3句话简洁回答，不要长篇大论）\n' + promptText },
+      ],
+      stream: true,
+      max_tokens: cfg.maxTokens || 4096,
+      temperature: 1.0,
+    };
     var resp = await fetch(cfg.baseUrl + '/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + STATE.apiKey },
-      body: JSON.stringify({
-        model: cfg.model,
-        messages: [
-          { role: 'user', content: (member.prompt ? member.prompt + '\n\n' : '') + '（群聊模式，请用1-3句话简洁回答，不要长篇大论）\n' + promptText },
-        ],
-        stream: true,
-        max_tokens: cfg.maxTokens || 4096,
-        temperature: 1.0,
-      }),
+      body: JSON.stringify(body),
       signal: STATE.abortController.signal,
     });
     if (!resp.ok) {
@@ -801,6 +890,7 @@ async function init() { try {
   // Load group settings
   STATE.groupRounds = loadGroupRounds();
   STATE.groupQuestioner = loadGroupQuestioner();
+  STATE.webSearch = loadWebSearch();
 
   // Restore group members
   var savedMembers = loadGroupMembers();
@@ -882,6 +972,25 @@ async function init() { try {
   roundDec.addEventListener('click', function(e) { e.stopPropagation(); setRounds(STATE.groupRounds - 1); });
   roundInc.addEventListener('click', function(e) { e.stopPropagation(); setRounds(STATE.groupRounds + 1); });
   groupMenuQuestionerSetting.addEventListener('click', toggleQuestioner);
+
+  // Web search toggle button
+  var webSearchBtn = document.getElementById('webSearchBtn');
+  function updateWebSearchBtn() {
+    webSearchBtn.classList.toggle('active', STATE.webSearch);
+  }
+  updateWebSearchBtn();
+  webSearchBtn.addEventListener('click', function() {
+    var glmKey = localStorage.getItem('api_key_glm_free');
+    if (!glmKey) {
+      // No GLM key configured — guide user to set it up
+      switchProvider('glm_free');
+      settingsModal.classList.add('open');
+      return;
+    }
+    STATE.webSearch = !STATE.webSearch;
+    saveWebSearch();
+    updateWebSearchBtn();
+  });
 
   function switchProvider(provider) {
     STATE.apiProvider = provider;
