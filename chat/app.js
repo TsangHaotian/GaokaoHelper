@@ -178,11 +178,11 @@ function avatarHtml(skill, opts) {
   var size = opts.size || 32;
   var fontSize = opts.fontSize || (size >= 32 ? 12 : 11);
   if (skill && skill.avatar) {
-    return 'style="background-image:url(' + skill.avatar + ');background-size:cover;background-position:center;width:' + size + 'px;height:' + size + 'px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"';
+    return 'style="background-image:url(' + skill.avatar + ');background-size:cover;background-position:center;width:' + size + 'px;height:' + size + 'px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">';
   }
   var initial = skill ? skill.label.charAt(0).toUpperCase() : '?';
   var color = skill ? skill.color : '#bbb';
-  return 'style="background:' + color + ';width:' + size + 'px;height:' + size + 'px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:' + fontSize + 'px;font-weight:600;flex-shrink:0;"' + (opts.noText ? '' : '>' + initial);
+  return 'style="background:' + color + ';width:' + size + 'px;height:' + size + 'px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:' + fontSize + 'px;font-weight:600;flex-shrink:0;">' + initial;
 }
 
 const SKILL_REPOS = {
