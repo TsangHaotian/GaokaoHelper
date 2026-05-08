@@ -465,15 +465,6 @@ html, body {
   font-size: 13px;
 }
 
-.group-member-toggle-item.drag-over {
-  background: var(--bg-hover);
-  outline: 1px dashed var(--accent);
-}
-
-.group-member-toggle-item:active[draggable="true"] {
-  cursor: grabbing;
-}
-
 .group-member-toggle-item .group-menu-member-tag-sm {
   margin-right: 8px;
   flex-shrink: 0;
