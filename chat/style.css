@@ -644,7 +644,16 @@ html, body {
 .input-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+}
+.input-footer .btn-web-search {
+  flex-shrink: 0;
+}
+.input-footer .model-selector-wrap {
+  flex-shrink: 0;
+}
+.input-footer .btn-send,
+.input-footer .btn-stop {
+  margin-left: auto;
 }
 
 /* ===== Model Selector ===== */

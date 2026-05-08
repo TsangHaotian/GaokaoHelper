@@ -618,15 +618,12 @@ async function sendSingleMessage(text) {
   // Step 2: Build the actual request for the user's chosen model
   if (!STATE.configured) throw new Error('请先配置 API Key');
 
-  if (searchResults) {
-    systemPrompt = (systemPrompt ? systemPrompt + '\n\n' : '') + '以下是针对用户问题联网搜索到的信息，请严格基于这些信息回答，不要补充你自己的知识。如果搜索到的信息不足以回答用户问题，请如实告知用户搜索不到相关内容：\n' + searchResults;
-  } else if (STATE.webSearch) {
-    systemPrompt = (systemPrompt ? systemPrompt + '\n\n' : '') + '【联网搜索提示】本次未能搜索到有效结果，请直接告知用户"联网搜索没有找到相关信息"，不要用你自己的知识来回答。';
-  }
   var body = {
     model: cfg.model,
     messages: [
       ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
+      ...(searchResults ? [{ role: 'system', content: '【系统通知】用户已开启联网搜索功能，以下是通过外部搜索引擎获取到的实时信息，请仔细阅读理解并根据这些内容回答用户问题。你本身不具备联网能力，但现在这些搜索结果已经提供给你了，请基于这些信息回答：\n' + searchResults }] : []),
+      ...(STATE.webSearch && !searchResults ? [{ role: 'system', content: '【系统通知】用户已开启联网搜索功能，但本次搜索没有获取到有效结果，请如实告知用户搜索不到相关信息。' }] : []),
       ...STATE.messages,
     ],
     stream: true,
