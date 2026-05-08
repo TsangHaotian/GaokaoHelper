@@ -173,6 +173,18 @@ const groupMenuQuestionerSetting = $('groupMenuQuestionerSetting');
 
 const AVATAR_COLORS = ['#1a73e8', '#e67e22', '#2ecc71', '#e74c3c', '#9b59b6', '#1abc9c', '#f39c12', '#3498db'];
 
+function avatarHtml(skill, opts) {
+  opts = opts || {};
+  var size = opts.size || 32;
+  var fontSize = opts.fontSize || (size >= 32 ? 12 : 11);
+  if (skill && skill.avatar) {
+    return 'style="background-image:url(' + skill.avatar + ');background-size:cover;background-position:center;width:' + size + 'px;height:' + size + 'px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"';
+  }
+  var initial = skill ? skill.label.charAt(0).toUpperCase() : '?';
+  var color = skill ? skill.color : '#bbb';
+  return 'style="background:' + color + ';width:' + size + 'px;height:' + size + 'px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:' + fontSize + 'px;font-weight:600;flex-shrink:0;"' + (opts.noText ? '' : '>' + initial);
+}
+
 const SKILL_REPOS = {
   'zhangxuefeng': 'https://github.com/alchaincyf/zhangxuefeng-skill',
   'ZhangXueFeng-skill-main': 'https://github.com/a18515373115-droid/ZhangXueFeng-skill',
@@ -201,7 +213,7 @@ async function scanSkills() {
       const sr = await fetch('skill/' + name + '/SKILL.md?t=' + Date.now());
       if (sr.ok) {
         const text = await sr.text();
-        STATE.skills.push({ name, label, prompt: text, color: AVATAR_COLORS[idx % AVATAR_COLORS.length] });
+        STATE.skills.push({ name, label, prompt: text, color: AVATAR_COLORS[idx % AVATAR_COLORS.length], avatar: entry.avatar || null });
         idx++;
       }
     }
@@ -218,11 +230,10 @@ async function scanSkills() {
 function renderSkillList() {
   // Add "群聊" as the third item
   var items = STATE.skills.map(function(s) {
-    var initial = s.label.charAt(0).toUpperCase();
     var isActive = STATE.activeSkill && STATE.activeSkill.name === s.name && !STATE.groupChatEnabled;
     return (
       '<div class="skill-item' + (isActive ? ' active' : '') + '" data-skill="' + s.name + '">' +
-        '<div class="skill-avatar" style="background:' + s.color + '">' + initial + '</div>' +
+        '<div class="skill-avatar" ' + avatarHtml(s, {size:38, fontSize:15}) + '</div>' +
         '<div class="skill-info">' +
           '<div class="skill-name">' + s.label + '</div>' +
           '<div class="skill-desc">' + s.name + '</div>' +
@@ -274,7 +285,7 @@ function renderGroupMemberToggles() {
     var item = document.createElement('div');
     item.className = 'group-member-toggle-item';
     item.innerHTML =
-      '<span class="group-menu-member-tag-sm" style="background:' + skill.color + '">' + skill.label.charAt(0).toUpperCase() + '</span>' +
+      '<span class="group-menu-member-tag-sm" ' + avatarHtml(skill, {size:26}) + '</span>' +
       '<span class="group-member-toggle-label">' + skill.label + '</span>' +
       '<label class="toggle-switch toggle-switch-sm">' +
         '<input type="checkbox" class="member-toggle-input" data-name="' + skill.name + '"' + (checked ? ' checked' : '') + '>' +
@@ -384,16 +395,13 @@ function addWelcomeMessage() {
     return;
   }
 
-  var label = STATE.activeSkill.label;
-  var initial = label.charAt(0).toUpperCase();
   var skill = STATE.skills.find(function(s) { return s.name === STATE.activeSkill.name; });
-  var color = skill ? skill.color : '#1a73e8';
   var text = WELCOME_TEXTS[STATE.activeSkill.name] || (STATE.configured ? '来吧，有什么问题直接问！' : '请先配置 API Key 后开始聊天。');
   var div = document.createElement('div');
   div.className = 'message bot';
   var paragraphs = text.split('\n').map(function(p) { return '<p>' + p + '</p>'; }).join('');
   div.innerHTML =
-    '<div class="msg-avatar"><span class="avatar-bot" style="background:' + color + '">' + initial + '</span></div>' +
+    '<div class="msg-avatar"><span class="avatar-bot" ' + avatarHtml(skill || STATE.activeSkill, {size:32}) + '</span></div>' +
     '<div class="bubble">' + paragraphs + '</div>';
   messagesEl.appendChild(div);
 }
@@ -425,22 +433,17 @@ function renderMessageDOM(role, content, skillLabel, isQuestioner) {
     if (isQuestioner) {
       div.className += ' bubble-questioner';
       div.innerHTML =
-        '<div class="msg-avatar"><span class="avatar-bot" style="background:#bbb;font-size:11px;">?</span></div>' +
+        '<div class="msg-avatar"><span class="avatar-bot" ' + avatarHtml(null, {size:32}) + '</span></div>' +
         '<div class="bubble"><div class="bubble-skill-label" style="color:#999">提问者</div>' + renderMarkdown(content) + '</div>';
     } else {
       var groupSkill = STATE.groupMembers.find(function(m) { return m.label === skillLabel; }) || STATE.skills.find(function(s) { return s.label === skillLabel; });
-      var gColor = groupSkill ? groupSkill.color : '#8e44ad';
-      var gInitial = skillLabel.charAt(0).toUpperCase();
       div.innerHTML =
-        '<div class="msg-avatar"><span class="avatar-bot" style="background:' + gColor + ';font-size:11px;">' + gInitial + '</span></div>' +
+        '<div class="msg-avatar"><span class="avatar-bot" ' + avatarHtml(groupSkill, {size:32}) + '</span></div>' +
         '<div class="bubble"><div class="bubble-skill-label" style="color:' + gColor + '">' + skillLabel + '</div>' + renderMarkdown(content) + '</div>';
     }
   } else {
-    var label = STATE.activeSkill ? STATE.activeSkill.label : 'AI';
-    var initial = label.charAt(0).toUpperCase();
     var skill = STATE.skills.find(function(s) { return s.name === (STATE.activeSkill ? STATE.activeSkill.name : null); });
-    var color = skill ? skill.color : '#1a73e8';
-    div.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" style="background:' + color + '">' + initial + '</span></div><div class="bubble">' + renderMarkdown(content) + '</div>';
+    div.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" ' + avatarHtml(skill || STATE.activeSkill, {size:32}) + '</span></div><div class="bubble">' + renderMarkdown(content) + '</div>';
   }
 
   messagesEl.appendChild(div);
@@ -577,14 +580,11 @@ async function sendSingleMessage(text) {
   removeTypingIndicator();
   STATE.messages.push({ role: 'assistant', content: '' });
 
-  var label = STATE.activeSkill.label;
-  var initial = label.charAt(0).toUpperCase();
   var skill = STATE.skills.find(function(s) { return s.name === STATE.activeSkill.name; });
-  var color = skill ? skill.color : '#1a73e8';
 
   var botDiv = document.createElement('div');
   botDiv.className = 'message bot';
-  botDiv.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" style="background:' + color + '">' + initial + '</span></div><div class="bubble"></div>';
+  botDiv.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" ' + avatarHtml(skill || STATE.activeSkill, {size:32}) + '</span></div><div class="bubble"></div>';
   messagesEl.appendChild(botDiv);
 
   var reader = resp.body.getReader();
@@ -632,12 +632,12 @@ async function sendGroupMessage(text) {
   // Stores the conversation so far for context in subsequent rounds
   var conversation = [];
 
-  function createStreamBubble(color, initial, labelText, isQuestioner) {
+  function createStreamBubble(member, labelText, isQuestioner) {
     var div = document.createElement('div');
     div.className = 'message bot' + (isQuestioner ? ' bubble-questioner' : '');
     div.innerHTML =
-      '<div class="msg-avatar"><span class="avatar-bot" style="background:' + color + ';font-size:11px;">' + initial + '</span></div>' +
-      '<div class="bubble"><div class="bubble-skill-label" style="color:' + (isQuestioner ? '#999' : color) + '">' + labelText + '</div></div>';
+      '<div class="msg-avatar"><span class="avatar-bot" ' + avatarHtml(member, {size:32}) + '</span></div>' +
+      '<div class="bubble"><div class="bubble-skill-label" style="color:' + (isQuestioner ? '#999' : (member ? member.color : '#8e44ad')) + '">' + labelText + '</div></div>';
     messagesEl.appendChild(div);
     var bubbleEl = div.querySelector('.bubble');
     scrollToBottom();
@@ -706,7 +706,7 @@ async function sendGroupMessage(text) {
 
   // Round 0: User question -> each member answers
   for (var mi = 0; mi < members.length; mi++) {
-    var bObj = createStreamBubble(members[mi].color, members[mi].label.charAt(0).toUpperCase(), members[mi].label, false);
+    var bObj = createStreamBubble(members[mi], members[mi].label, false);
     var answer = await callMemberStream(members[mi], text, bObj);
     conversation.push(members[mi].label + '：' + answer);
     allResults.push({ label: members[mi].label, content: answer, isQuestioner: false });
@@ -715,7 +715,7 @@ async function sendGroupMessage(text) {
   // Questioner summarizes after round 0, before subsequent rounds
   if (withQuestioner && rounds > 0) {
     var questionerPrompt = '你是群聊主持人。请先总结上述各方的核心观点，然后按以下格式输出追问：\n【AI名称】追问内容\n【AI名称】追问内容\n\n对话历史：\n' + conversation.join('\n') + '\n\n请先总结各方观点，然后按【AI名称】格式对每个AI提出一个追问。';
-    var qObj = createStreamBubble('#bbb', '?', '提问者', true);
+    var qObj = createStreamBubble(null, '提问者', true);
     var qAnswer = await callMemberStream(qMember, questionerPrompt, qObj);
     conversation.push('提问者：' + qAnswer);
     allResults.push({ label: '提问者', content: qAnswer, isQuestioner: true });
@@ -725,7 +725,7 @@ async function sendGroupMessage(text) {
   for (var round = 1; round <= rounds; round++) {
     if (withQuestioner) {
       for (var mj = 0; mj < members.length; mj++) {
-        var bObj2 = createStreamBubble(members[mj].color, members[mj].label.charAt(0).toUpperCase(), members[mj].label, false);
+        var bObj2 = createStreamBubble(members[mj], members[mj].label, false);
         // Extract question for this member from qAnswer
         var memberQuestion = '';
         var lines = qAnswer.split('\n');
@@ -744,7 +744,7 @@ async function sendGroupMessage(text) {
       var lastAnswer = conversation[conversation.length - 1] || text;
       var lastLabel = lastAnswer.split('：')[0] || '上一位';
       for (var mk = 0; mk < members.length; mk++) {
-        var bObj3 = createStreamBubble(members[mk].color, members[mk].label.charAt(0).toUpperCase(), members[mk].label, false);
+        var bObj3 = createStreamBubble(members[mk], members[mk].label, false);
         var a2 = await callMemberStream(members[mk], lastLabel + '刚才说：' + (conversation[conversation.length - 1] || text) + '\n\n你对这个观点怎么看？有什么补充或不同意见？', bObj3);
         conversation.push(members[mk].label + '：' + a2);
         allResults.push({ label: members[mk].label, content: a2, isQuestioner: false });
@@ -762,15 +762,12 @@ async function sendGroupMessage(text) {
 
 // ===== Typing =====
 function showTypingIndicator() {
-  var label = STATE.activeSkill.label;
-  var initial = label.charAt(0).toUpperCase();
   var skill = STATE.skills.find(function(s) { return s.name === STATE.activeSkill.name; });
-  var color = skill ? skill.color : '#1a73e8';
 
   var div = document.createElement('div');
   div.className = 'message bot typing';
   div.innerHTML =
-    '<div class="msg-avatar"><span class="avatar-bot" style="background:' + color + '">' + initial + '</span></div>' +
+    '<div class="msg-avatar"><span class="avatar-bot" ' + avatarHtml(skill || STATE.activeSkill, {size:32}) + '</span></div>' +
     '<div class="bubble"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
   messagesEl.appendChild(div);
   scrollToBottom();

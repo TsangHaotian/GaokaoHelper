@@ -1,9 +1,9 @@
 [
-  { "name": "zhangxuefeng", "label": "张雪峰" },
-  { "name": "ZhangXueFeng-skill-main", "label": "张雪峰 V2.0" },
-  { "name": "balancer", "label": "平衡者" },
-  { "name": "parent", "label": "家长" },
-  { "name": "counselor", "label": "心理辅导员" },
-  { "name": "career", "label": "职业规划师" },
-  { "name": "data-analyst", "label": "数据分析师" }
+  { "name": "zhangxuefeng", "label": "张雪峰", "avatar": "img/张雪峰.webp" },
+  { "name": "ZhangXueFeng-skill-main", "label": "张雪峰 V2.0", "avatar": "img/张雪峰V2.webp" },
+  { "name": "balancer", "label": "平衡者", "avatar": "img/平衡者.webp" },
+  { "name": "parent", "label": "家长", "avatar": "img/父母.jpg" },
+  { "name": "counselor", "label": "心理辅导员", "avatar": "img/心理辅导员.webp" },
+  { "name": "career", "label": "职业规划师", "avatar": "img/职业规划师.jpg" },
+  { "name": "data-analyst", "label": "数据分析师", "avatar": "img/数据分析师.webp" }
 ]
