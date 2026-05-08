@@ -52,7 +52,7 @@
   </style>
 </head>
 <body>
-  <div id="loader-bar"><div class="bar" style="width:10%"></div><div class="text">GaokaoAI v0.10.1 — 加载角色中...</div></div>
+  <div id="loader-bar"><div class="bar" style="width:10%"></div><div class="text">GaokaoAI v0.11.0 — 加载角色中...</div></div>
   <div class="app">
     <!-- 侧栏 - 角色列表 -->
     <aside class="sidebar">
@@ -60,7 +60,7 @@
         <div class="sidebar-brand">
           <span class="brand-logo">G</span>
           <span class="brand-text">GaokaoAI</span>
-          <span class="version-tag">v0.10.1</span>
+          <span class="version-tag">v0.11.0</span>
         </div>
       </div>
 
@@ -175,13 +175,13 @@
           <p class="setting-desc">选择你要使用的 API 提供商</p>
           <div class="setting-input-row">
             <select class="api-input" id="apiProviderSelect">
-              <option value="deepseek">DeepSeek（V4 Flash · 低费用）</option>
-              <option value="moonshot">Moonshot 月之暗面（moonshot-v1-128k · 中费用）</option>
-              <option value="minimax">MiniMax（M2-her · 高费用）</option>
-              <option value="glm_free">GLM-4-Flash（完全免费）</option>
-              <option value="glm47">GLM-4.7-Flash（完全免费）</option>
+              <option value="deepseek">🥇 DeepSeek（V4 Flash · 低费用 · 推荐）</option>
+              <option value="moonshot">🥈 Moonshot 月之暗面（moonshot-v1-128k · 中费用）</option>
+              <option value="minimax">🥉 MiniMax（M2-her · 高费用）</option>
+              <option value="glm_free">🆓 GLM-4-Flash（完全免费 · 效果较弱）</option>
+              <option value="glm47">🆓 GLM-4.7-Flash（完全免费 · 响应较慢）</option>
             </select>
-            <p style="font-size:12px;color:var(--text-muted);margin-top:6px;line-height:1.4;">* 经测试，GLM-4-Flash 由于模型参数量较小，效果并非最佳，建议优先选择其他模型。GLM-4.7-Flash 由于官方算力限制，响应速度可能较慢，建议耐心等待。</p>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:6px;line-height:1.4;">💡 不同模型能力有差距：DeepSeek 效果最好但需付费；GLM 系列完全免费但参数量小、效果较弱。如果不确定，建议先选 DeepSeek。免费模型够用，但别指望跟付费模型效果一样好。</p>
           </div>
         </div>
         <div class="setting-group">
@@ -210,7 +210,7 @@
             </a>
           </p>
         </div>
-        <p style="font-size:11px;color:#ff6b81;margin-top:6px;line-height:1.4;padding:8px 10px;background:#fff5f5;border-radius:8px;border:0.5px solid #ffd0d6;"><strong>免责声明：</strong>本工具为 AI 对话辅助工具，所有回答由 AI 生成仅供参考。因参考本工具内容而产生滑档、退档等后果，作者概不负责，请以官方渠道信息为准。</p>
+        <p style="font-size:11px;color:#ff6b81;margin-top:6px;line-height:1.4;padding:8px 10px;background:#fff5f5;border-radius:8px;border:0.5px solid #ffd0d6;"><strong>免责声明：</strong>本工具为 AI 对话辅助工具，所有回答由 AI 生成仅供参考，任何人都不敢保证 100% 正确率。未开启联网搜索时，AI 仅基于训练知识回答，可能存在胡编乱造的情况，请用户注意甄别。开启联网搜索后，搜索质量受 GLM-4-Flash 模型能力影响，也可能存在错误，请用户仔细核对。因参考本工具内容而产生滑档、退档等后果，作者概不负责，作者仅提供系统工作流程和网站部署，内容全部由 AI 生成，请以官方渠道信息为准。</p>
       </div>
     </div>
   </div>
@@ -232,6 +232,8 @@
             <li><strong>风险自负</strong>：因参考本工具内容而产生的任何经济后果（包括但不限于滑档、退档、错失录取机会等），作者<strong>概不负责</strong>。</li>
             <li><strong>核实义务</strong>：用户有义务自行核实所有信息，并以官方渠道（教育部、省考试院、目标院校官网等）发布的信息为准。</li>
             <li><strong>角色扮演</strong>：部分对话模式下 AI 会模拟特定角色风格，但这不代表角色本人或其继承人的观点。</li>
+            <li><strong>模型差异</strong>：不同模型的回答质量和能力存在明显差距。DeepSeek V4 Flash 效果较好但需要付费；GLM-4-Flash / GLM-4.7-Flash 完全免费但效果较弱（参数量较小，回答质量不如付费模型）。用户可根据需求和经济条件选择，便宜能用但效果肯定不是最好的。</li>
+            <li><strong>胡编乱造风险</strong>：未开启联网搜索时，AI 仅基于训练知识回答，可能胡编乱造（特别是分数线等具体数据）。开启联网搜索后，搜索质量受 GLM-4-Flash 模型能力影响，也可能存在错误。用户需仔细甄别所有回答，作者不保证内容准确性。</li>
           </ol>
           <p class="disclaimer-emph">继续使用即表示您已阅读、理解并同意上述条款。</p>
           <p class="disclaimer-emph">如不同意，请立即关闭本页面。</p>
