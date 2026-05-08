@@ -595,9 +595,10 @@ async function sendSingleMessage(text) {
           var msg = srData.choices && srData.choices[0] && srData.choices[0].message;
           if (msg) {
             searchResults = msg.content || '';
-            // If content is empty, tool_calls may contain web_search results
+            console.log('[webSearch] 搜索结果长度:', searchResults.length);
             if (!searchResults && msg.tool_calls) {
               searchResults = '搜索已完成，结果已整合到回答中。';
+              console.log('[webSearch] 使用 tool_calls 占位');
             }
           }
         } else {
