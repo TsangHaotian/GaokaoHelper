@@ -1247,3 +1247,83 @@ html, body {
   .message { max-width: 92%; }
   .input-area { padding: 8px 10px 12px; }
 }
+
+/* ===== Disclaimer Checkboxes ===== */
+.disclaimer-checkboxes {
+  margin: 12px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.disclaimer-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  padding: 10px 12px;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.disclaimer-checkbox:hover {
+  border-color: #ff6b81;
+  background: #fff8f9;
+}
+
+.disclaimer-checkbox input[type="checkbox"] {
+  display: none;
+}
+
+.disclaimer-checkbox .checkmark {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 2px solid #ccc;
+  background: #fff;
+  margin-top: 1px;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.disclaimer-checkbox input[type="checkbox"]:checked + .checkmark {
+  background: #007aff;
+  border-color: #007aff;
+}
+
+.disclaimer-checkbox input[type="checkbox"]:checked + .checkmark::after {
+  content: '';
+  display: block;
+  width: 6px;
+  height: 10px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-top: -1px;
+}
+
+.disclaimer-checkbox .check-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+/* ===== AI 生成标记 ===== */
+.bubble-ai-tag {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 0.5px solid var(--bubble-border);
+  text-align: right;
+  opacity: 0.7;
+  user-select: none;
+  -webkit-user-select: none;
+}

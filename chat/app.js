@@ -440,23 +440,23 @@ function renderMessageDOM(role, content, skillLabel, isQuestioner) {
   } else if (isQuestioner === 'search') {
     div.innerHTML =
       '<div class="msg-avatar"><span class="avatar-bot" style="background:#007aff;font-size:14px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔍</span></div>' +
-      '<div class="bubble"><div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(content) + '</div>';
+      '<div class="bubble"><div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(content) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div></div>';
   } else if (STATE.groupChatEnabled && skillLabel) {
     // Questioner
     if (isQuestioner) {
       div.className += ' bubble-questioner';
       div.innerHTML =
         '<div class="msg-avatar"><span class="avatar-bot" ' + avatarHtml(null, {size:32}) + '</span></div>' +
-        '<div class="bubble"><div class="bubble-skill-label" style="color:#999">提问者</div>' + renderMarkdown(content) + '</div>';
+        '<div class="bubble"><div class="bubble-skill-label" style="color:#999">提问者</div>' + renderMarkdown(content) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div></div>';
     } else {
       var groupSkill = STATE.groupMembers.find(function(m) { return m.label === skillLabel; }) || STATE.skills.find(function(s) { return s.label === skillLabel; });
       div.innerHTML =
         '<div class="msg-avatar"><span class="avatar-bot" ' + avatarHtml(groupSkill, {size:32}) + '</span></div>' +
-        '<div class="bubble"><div class="bubble-skill-label" style="color:' + (groupSkill ? groupSkill.color : '#8e44ad') + '">' + skillLabel + '</div>' + renderMarkdown(content) + '</div>';
+        '<div class="bubble"><div class="bubble-skill-label" style="color:' + (groupSkill ? groupSkill.color : '#8e44ad') + '">' + skillLabel + '</div>' + renderMarkdown(content) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div></div>';
     }
   } else {
     var skill = STATE.skills.find(function(s) { return s.name === (STATE.activeSkill ? STATE.activeSkill.name : null); });
-    div.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" ' + avatarHtml(skill || STATE.activeSkill, {size:32}) + '</span></div><div class="bubble">' + renderMarkdown(content) + '</div>';
+    div.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" ' + avatarHtml(skill || STATE.activeSkill, {size:32}) + '</span></div><div class="bubble">' + renderMarkdown(content) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div></div>';
   }
 
   messagesEl.appendChild(div);
@@ -617,14 +617,14 @@ async function sendSingleMessage(text) {
                 var delta = parsed.choices && parsed.choices[0] && parsed.choices[0].delta ? (parsed.choices[0].delta.content || '') : '';
                 if (delta) {
                   searchContent += delta;
-                  if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent);
+                  if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div>';
                   scrollToBottom();
                 }
               } catch (e) { /* skip */ }
             }
           }
           searchResults = searchContent;
-          if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent) + '<div style="margin-top:8px;padding-top:6px;border-top:0.5px solid var(--border);font-size:11px;color:var(--text-muted);line-height:1.4;">💡 如果不需要联网搜索，请关闭输入框下方的联网按钮，可减少等待时间，提升对话流畅度。</div>';
+          if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div><div style="margin-top:8px;padding-top:6px;border-top:0.5px solid var(--border);font-size:11px;color:var(--text-muted);line-height:1.4;">💡 如果不需要联网搜索，请关闭输入框下方的联网按钮，可减少等待时间，提升对话流畅度。</div>';
           console.log('[webSearch] 搜索结果:', searchResults);
         } else {
           var srErr = await sr.json().catch(function() { return {}; });
@@ -698,7 +698,7 @@ async function sendSingleMessage(text) {
         if (delta) {
           fullContent += delta;
           var bubble = botDiv.querySelector('.bubble');
-          if (bubble) bubble.innerHTML = renderMarkdown(fullContent);
+          if (bubble) bubble.innerHTML = renderMarkdown(fullContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div>';
           scrollToBottom();
         }
       } catch (e) { /* skip */ }
@@ -706,7 +706,7 @@ async function sendSingleMessage(text) {
   }
   if (renderTimeout) clearTimeout(renderTimeout);
   var finalBubble = botDiv.querySelector('.bubble');
-  if (finalBubble) finalBubble.innerHTML = renderMarkdown(fullContent);
+  if (finalBubble) finalBubble.innerHTML = renderMarkdown(fullContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div>';
   var lastMsg = STATE.messages[STATE.messages.length - 1];
   if (lastMsg) lastMsg.content = fullContent;
   // Save search assistant message before main AI message
@@ -770,14 +770,14 @@ async function sendGroupMessage(text) {
                 var delta = parsed.choices && parsed.choices[0] && parsed.choices[0].delta ? (parsed.choices[0].delta.content || '') : '';
                 if (delta) {
                   searchContent += delta;
-                  if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent);
+                  if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div>';
                   scrollToBottom();
                 }
               } catch (e) { /* skip */ }
             }
           }
           searchResults = searchContent;
-          if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent) + '<div style="margin-top:8px;padding-top:6px;border-top:0.5px solid var(--border);font-size:11px;color:var(--text-muted);line-height:1.4;">💡 如果不需要联网搜索，请关闭输入框下方的联网按钮，可减少等待时间，提升对话流畅度。</div>';
+          if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div><div style="margin-top:8px;padding-top:6px;border-top:0.5px solid var(--border);font-size:11px;color:var(--text-muted);line-height:1.4;">💡 如果不需要联网搜索，请关闭输入框下方的联网按钮，可减少等待时间，提升对话流畅度。</div>';
         }
       } catch (e) {
         if (e.name === 'AbortError') throw e;
@@ -848,7 +848,7 @@ async function sendGroupMessage(text) {
             if (bubbleObj && bubbleObj.bubbleEl) {
               var labelText = member.label || (member === qMember ? '提问者' : '');
               var c = member === qMember ? '#999' : member.color;
-              bubbleObj.bubbleEl.innerHTML = (labelText ? '<div class="bubble-skill-label" style="color:' + c + '">' + labelText + '</div>' : '') + renderMarkdown(fullContent);
+              bubbleObj.bubbleEl.innerHTML = (labelText ? '<div class="bubble-skill-label" style="color:' + c + '">' + labelText + '</div>' : '') + renderMarkdown(fullContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div>';
               scrollToBottom();
             }
           }
@@ -858,7 +858,7 @@ async function sendGroupMessage(text) {
     if (bubbleObj && bubbleObj.bubbleEl) {
       var labelText = member.label || (member === qMember ? '提问者' : '');
       var c = member === qMember ? '#999' : member.color;
-      bubbleObj.bubbleEl.innerHTML = (labelText ? '<div class="bubble-skill-label" style="color:' + c + '">' + labelText + '</div>' : '') + renderMarkdown(fullContent);
+      bubbleObj.bubbleEl.innerHTML = (labelText ? '<div class="bubble-skill-label" style="color:' + c + '">' + labelText + '</div>' : '') + renderMarkdown(fullContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div>';
     }
     return fullContent;
   }
@@ -1211,6 +1211,8 @@ async function init() { try {
   var loaderBar = document.getElementById('loader-bar');
   if (loaderBar) { loaderBar.style.opacity = '0'; setTimeout(function() { loaderBar.remove(); }, 300); }
   document.querySelector('.app').classList.add('ready');
+  var seo = document.querySelector('.seo-content');
+  if (seo) seo.style.display = 'none';
 } catch(e) { console.error("init error:", e); document.querySelector('.app').classList.add('ready'); } }
 
 // ===== Disclaimer =====
@@ -1218,6 +1220,12 @@ var disclaimerModal = document.getElementById('disclaimerModal');
 var disclaimerAccept = document.getElementById('disclaimerAccept');
 var disclaimerReject = document.getElementById('disclaimerReject');
 var disclaimerCountdown = document.getElementById('disclaimerCountdown');
+var disclaimerCheck1 = document.getElementById('disclaimerCheck1');
+var disclaimerCheck2 = document.getElementById('disclaimerCheck2');
+
+function updateDisclaimerAccept() {
+  disclaimerAccept.disabled = !(disclaimerCheck1.checked && disclaimerCheck2.checked);
+}
 
 function checkDisclaimer() {
   if (localStorage.getItem('disclaimer_accepted')) { init(); return; }
@@ -1225,15 +1233,21 @@ function checkDisclaimer() {
   var seconds = 10;
   disclaimerAccept.disabled = true;
   disclaimerCountdown.textContent = seconds;
+  var canEnable = false;
   var timer = setInterval(function() {
     seconds--;
     disclaimerCountdown.textContent = seconds;
-    if (seconds <= 0) {
+    if (seconds <= 0 && !canEnable) {
       clearInterval(timer);
-      disclaimerAccept.disabled = false;
+      canEnable = true;
       disclaimerCountdown.textContent = '0';
+      disclaimerCheck1.disabled = false;
+      disclaimerCheck2.disabled = false;
+      updateDisclaimerAccept();
     }
   }, 1000);
+  disclaimerCheck1.addEventListener('change', updateDisclaimerAccept);
+  disclaimerCheck2.addEventListener('change', updateDisclaimerAccept);
   disclaimerAccept.addEventListener('click', function() {
     localStorage.setItem('disclaimer_accepted', 'true');
     disclaimerModal.classList.remove('open');

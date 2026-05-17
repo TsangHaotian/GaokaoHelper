@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tsanghaotian.github.io/GaokaoHelper/sitemap.xml
