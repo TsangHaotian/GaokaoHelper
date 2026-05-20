@@ -44,7 +44,7 @@
   </script>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23007aff'/%3E%3Ctext x='50' y='68' text-anchor='middle' fill='white' font-size='48' font-weight='700' font-family='sans-serif'%3EG%3C/text%3E%3C/svg%3E">
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23007aff'/%3E%3Ctext x='50' y='68' text-anchor='middle' fill='white' font-size='48' font-weight='700' font-family='sans-serif'%3EG%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="chat/style.css?v=0.7.0">
+  <link rel="stylesheet" href="chat/style.css?v=0.11.0">
   <link rel="manifest" href="manifest.json">
   <style>
     /* PWA splash screen */
@@ -247,6 +247,31 @@
           </p>
         </div>
         <p style="font-size:11px;color:#ff6b81;margin-top:6px;line-height:1.4;padding:8px 10px;background:#fff5f5;border-radius:8px;border:0.5px solid #ffd0d6;"><strong>免责声明：</strong>本工具为 AI 对话辅助工具，所有回答由 AI 生成仅供参考，任何人都不敢保证 100% 正确率。未开启联网搜索时，AI 仅基于训练知识回答，可能存在胡编乱造的情况，请用户注意甄别。开启联网搜索后，搜索质量受 GLM-4-Flash 模型能力影响，也可能存在错误，请用户仔细核对。因参考本工具内容而产生滑档、退档等后果，作者概不负责，作者仅提供系统工作流程和网站部署，内容全部由 AI 生成，请以官方渠道信息为准。</p>
+        <div class="setting-group">
+          <label class="setting-label" style="cursor:pointer;" onclick="var e=document.getElementById('changelogContent');e.style.display=e.style.display==='none'?'':'none';">📋 更新日志 <span style="font-size:11px;color:var(--text-muted);font-weight:400;">（点击展开）</span></label>
+          <div id="changelogContent" style="display:none;font-size:12px;color:var(--text-secondary);line-height:1.7;margin-top:4px;padding:6px 0;">
+            <p><strong>v0.11.0</strong> — 2026-05-20<br>
+            · 新增数据录入页面，支持用户自行录入高考成绩、排名和省份信息<br>
+            · 多目标院校管理：支持添加多所院校，每所独立管理名称、专业和往年录取数据<br>
+            · 往年录取数据支持动态增减年份行，自动生成近3年<br>
+            · 用户录入数据自动注入所有 AI 对话（单人模式及群聊），作为最高优先级上下文<br>
+            · 数据持久化至本地存储，切换页面不丢失，切换 AI 技能时自动读取<br>
+            · 数据录入排到侧栏第一位，设置中隐藏右上角菜单按钮<br>
+            · 推荐使用夸克App查询招生数据提示</p>
+            <p><strong>v0.7.0</strong><br>
+            · 添加新版设置面板，优化 UI 交互<br>
+            · 技能分组和群聊功能增强</p>
+            <p><strong>v0.6.0</strong><br>
+            · 加入用户自行录入高考数据功能，防止搜索数据造假和 AI 幻觉<br>
+            · 加入必应搜索必要组件</p>
+            <p><strong>v0.5.10</strong><br>
+            · 优化 SEO，更新免责声明</p>
+            <p><strong>v0.5.9</strong><br>
+            · UI 细节优化</p>
+            <p><strong>v0.5.8</strong><br>
+            · 早期版本发布</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -329,6 +354,6 @@
     <p>本项目开源在 <a href="https://github.com/TsangHaotian/GaokaoHelper">GitHub</a>，欢迎贡献角色 SKILL 定义文件。</p>
   </div>
 
-  <script src="chat/app.js?v=0.7.0"></script>
+  <script src="chat/app.js?v=0.11.0"></script>
 </body>
 </html>
