@@ -839,6 +839,11 @@ function renderAnalysisForm() {
   var schoolCard = document.getElementById('targetSchoolCard');
   if (schoolCard) renderSchoolCard(schoolCard);
 
+  var tip = document.createElement('div');
+  tip.style.cssText = 'width:100%;flex-shrink:0;font-size:11px;color:var(--text-muted);text-align:center;line-height:1.6;padding:8px 20px 0;';
+  tip.textContent = '查大学招生数据推荐用手机夸克App里的"高考"频道——各院校历年的录取分数、位次、招生人数都能查到，数据更新也比较及时，关键是里面没有任何广告弹窗，用着清爽。声明：这不是广告，纯粹是自己用过觉得好用才推荐。';
+  wrapper.appendChild(tip);
+
   // Auto-save entry data on any input change
   wrapper.addEventListener('input', function() { saveEntryData(); });
 }
