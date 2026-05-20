@@ -1315,6 +1315,342 @@ html, body {
   color: var(--text-primary);
 }
 
+/* ===== 高考分析页面 ===== */
+.analysis-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px 20px;
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  justify-content: center;
+  gap: 20px;
+  background: var(--bg-chat);
+}
+
+.analysis-card {
+  flex: 1 1 300px;
+  min-width: 280px;
+  max-width: 520px;
+  background: #fff;
+  border-radius: 16px;
+  border: 0.5px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.analysis-card-header {
+  padding: 16px 20px 12px;
+  border-bottom: 0.5px solid var(--border);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.analysis-card-body {
+  padding: 16px 20px 20px;
+}
+
+.analysis-card-scroll .analysis-card-body {
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.analysis-exam-type {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.analysis-exam-type-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 0.5px solid var(--border);
+  background: var(--bg-page);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+
+.analysis-exam-type-btn:hover {
+  background: var(--bg-hover);
+}
+
+.analysis-exam-type-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.analysis-subject-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.analysis-subject-full {
+  grid-column: 1 / -1;
+}
+
+.analysis-subject-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.analysis-subject-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.analysis-subject-input {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 0.5px solid var(--border);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.analysis-subject-input:focus {
+  border-color: var(--accent);
+}
+
+.analysis-subject-input::placeholder {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.analysis-section-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  margin-top: 4px;
+}
+
+.analysis-rank-input {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 0.5px solid var(--border);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.analysis-rank-input:focus {
+  border-color: var(--accent);
+}
+
+.analysis-rank-input::placeholder {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.analysis-submit-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: background 0.15s;
+  margin-top: 4px;
+}
+
+.analysis-submit-btn:hover {
+  background: var(--accent-hover);
+}
+
+.analysis-section-divider {
+  height: 0.5px;
+  background: var(--border);
+  margin: 14px 0;
+}
+
+.analysis-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.5;
+}
+
+
+/* select subject grid - 3 columns for 选考 */
+.analysis-subject-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* ===== 往年录取数据年份行 ===== */
+.prev-year-row {
+  background: var(--bg-page);
+  border-radius: 10px;
+  border: 0.5px solid var(--border);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.prev-year-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.prev-year-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.prev-year-del-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.prev-year-del-btn:hover {
+  background: #ffebee;
+  color: #e53935;
+}
+
+.prev-year-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.prev-year-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.prev-year-input {
+  padding: 6px 8px !important;
+  font-size: 13px !important;
+}
+
+/* ===== 目标院校选择器 ===== */
+.school-selector-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.school-selector {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 0.5px solid var(--border);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: var(--font);
+  cursor: pointer;
+  outline: none;
+}
+
+.school-page-num {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.school-nav-bar {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.school-nav-btn {
+  flex: 1;
+  min-width: 60px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 0.5px solid var(--border);
+  background: var(--bg-page);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-family: var(--font);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.school-nav-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.school-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.school-nav-btn.school-add-btn {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.school-nav-btn.school-add-btn:hover {
+  opacity: 0.9;
+}
+
+.school-nav-btn.school-del-btn {
+  color: #e53935;
+  border-color: #ffcdd2;
+}
+
+.school-nav-btn.school-del-btn:hover {
+  background: #ffebee;
+}
+
 /* ===== AI 生成标记 ===== */
 .bubble-ai-tag {
   font-size: 11px;

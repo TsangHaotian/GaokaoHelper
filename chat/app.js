@@ -63,6 +63,7 @@ const STATE = {
 };
 
 const GROUP_CHAT_NAME = '__group_chat__';
+const ANALYSIS_NAME = '__analysis__';
 
 // ===== Storage =====
 function storageKey(name) { return 'chat_' + name; }
@@ -250,6 +251,18 @@ function renderSkillList() {
     );
   });
 
+  // Add analysis item at the top
+  var analysisActive = STATE.activeSkill && STATE.activeSkill.name === ANALYSIS_NAME;
+  items.unshift(
+    '<div class="skill-item' + (analysisActive ? ' active' : '') + '" data-skill="' + ANALYSIS_NAME + '">' +
+      '<div class="skill-avatar" style="background:#e67e22">录</div>' +
+      '<div class="skill-info">' +
+        '<div class="skill-name">数据录入</div>' +
+        '<div class="skill-desc">录入成绩与目标院校</div>' +
+      '</div>' +
+    '</div>'
+  );
+
   // Add group chat item
   var groupActive = STATE.activeSkill && STATE.activeSkill.name === GROUP_CHAT_NAME;
   items.push(
@@ -328,9 +341,36 @@ function updateGroupMenuText() {
   questionerCheckbox.checked = STATE.groupQuestioner;
 }
 
+function showInputArea() {
+  var inputArea = document.querySelector('.input-area');
+  if (inputArea) inputArea.style.display = '';
+  menuBtn.style.display = '';
+  // Reset messages styles when leaving analysis mode
+  messagesEl.style.overflow = '';
+  messagesEl.style.flex = '';
+  messagesEl.style.minHeight = '';
+}
+
 // ===== Skill Selection =====
 function selectSkill(name) {
   saveMessages();
+  // Save entry data before leaving data entry mode
+  if (STATE.activeSkill && STATE.activeSkill.name !== name && STATE.activeSkill.name === ANALYSIS_NAME) {
+    saveEntryData();
+  }
+
+  if (name === ANALYSIS_NAME) {
+    STATE.groupChatEnabled = false;
+    STATE.activeSkill = { name: ANALYSIS_NAME, label: '数据录入', prompt: '' };
+    currentSkillName.textContent = '数据录入';
+    STATE.messages = [];
+    renderSkillList();
+    updateGroupDropdownVisibility();
+    updateUIForConfigured(STATE.configured);
+    renderAnalysisForm();
+    saveActiveSkill();
+    return;
+  }
 
   if (name === GROUP_CHAT_NAME) {
     STATE.groupChatEnabled = true;
@@ -338,6 +378,7 @@ function selectSkill(name) {
     currentSkillName.textContent = 'AI 群聊';
     skillInfoName.textContent = 'AI 群聊';
     skillInfoDesc.textContent = '多人同时回答';
+    showInputArea();
     
     STATE.messages = loadMessages(GROUP_CHAT_NAME);
     renderSkillList();
@@ -356,6 +397,7 @@ function selectSkill(name) {
   if (!skill) return;
   STATE.activeSkill = { name: skill.name, label: skill.label, prompt: skill.prompt || '' };
   currentSkillName.textContent = skill.label;
+  showInputArea();
   skillInfoName.textContent = skill.label;
   var repoUrl = SKILL_REPOS[skill.name];
   skillInfoDesc.textContent = repoUrl || '无';
@@ -412,6 +454,475 @@ function addWelcomeMessage() {
     '<div class="msg-avatar"><span class="avatar-bot" ' + avatarHtml(skill || STATE.activeSkill, {size:32}) + '</span></div>' +
     '<div class="bubble">' + paragraphs + '</div>';
   messagesEl.appendChild(div);
+}
+
+// ===== 数据录入 =====
+var analysisExamType = 'xingaokao'; // xingaokao | wenli | old
+var analysisTargetSchools = []; // [{name, major, years: [{year, score, rank, enroll}]}]
+var analysisCurrentSchoolIdx = 0;
+
+// Persisted entry data for injection into AI conversations
+var savedEntryData = null; // { examType, scores:{}, rank, province, schools:[] }
+
+function saveEntryData() {
+  // Collect scores from DOM if available
+  var scores = {};
+  document.querySelectorAll('.score-input').forEach(function(inp) {
+    if (inp.value) scores[inp.dataset.subject] = inp.value;
+  });
+  var rank = (document.getElementById('analysisRankInput') || {}).value || '';
+  var province = (document.getElementById('analysisProvinceInput') || {}).value || '';
+  // Sync current school name/major from DOM before saving
+  var curSchool = analysisTargetSchools[analysisCurrentSchoolIdx];
+  if (curSchool) {
+    var nameInp = document.querySelector('.school-name-input');
+    var majorInp = document.querySelector('.school-major-input');
+    if (nameInp) curSchool.name = nameInp.value;
+    if (majorInp) curSchool.major = majorInp.value;
+  }
+  savedEntryData = {
+    examType: analysisExamType,
+    scores: scores,
+    rank: rank,
+    province: province,
+    schools: JSON.parse(JSON.stringify(analysisTargetSchools)),
+  };
+  try {
+    localStorage.setItem(storageKey('entry_data'), JSON.stringify(savedEntryData));
+  } catch (e) { /* ignore */ }
+}
+
+function loadEntryData() {
+  try {
+    var raw = localStorage.getItem(storageKey('entry_data'));
+    if (raw) savedEntryData = JSON.parse(raw);
+    else savedEntryData = null;
+  } catch (e) { savedEntryData = null; }
+}
+
+function buildDataContextPrompt() {
+  // Ensure data is loaded from storage
+  if (!savedEntryData) loadEntryData();
+  if (!savedEntryData) return '';
+
+  var d = savedEntryData;
+  var hasScores = Object.keys(d.scores).length > 0;
+  var hasSchools = d.schools && d.schools.length > 0 && d.schools.some(function(s) { return s.name; });
+  if (!hasScores && !d.rank && !hasSchools) return '';
+
+  var lines = [];
+  lines.push('【用户录入的高考数据 — 请优先采信以下数据】');
+
+  var examLabels = { xingaokao: '新高考（3+1+2）', wenli: '文理分科', old: '纯文理（3+综合）' };
+  lines.push('考试类型：' + (examLabels[d.examType] || d.examType));
+
+  if (hasScores) {
+    var scoreParts = [];
+    if (d.scores.yuwen) scoreParts.push('语文：' + d.scores.yuwen + '分');
+    if (d.scores.shuxue) scoreParts.push('数学：' + d.scores.shuxue + '分');
+    if (d.scores.waiyu) scoreParts.push('外语：' + d.scores.waiyu + '分');
+    if (d.examType === 'xingaokao') {
+      if (d.scores.wuli_xgk) scoreParts.push('物理：' + d.scores.wuli_xgk + '分');
+      if (d.scores.lishi_xgk) scoreParts.push('历史：' + d.scores.lishi_xgk + '分');
+      ['zhengzhi','dili','huaxue','shengwu'].forEach(function(k) {
+        if (d.scores[k]) scoreParts.push({zhengzhi:'思想政治',dili:'地理',huaxue:'化学',shengwu:'生物学'}[k] + '：' + d.scores[k] + '分');
+      });
+    } else if (d.examType === 'wenli') {
+      if (d.scores.lizong) scoreParts.push('理科综合：' + d.scores.lizong + '分');
+      if (d.scores.wenzong) scoreParts.push('文科综合：' + d.scores.wenzong + '分');
+    } else {
+      if (d.scores.zonghe) scoreParts.push('综合：' + d.scores.zonghe + '分');
+    }
+    lines.push('各科成绩：' + scoreParts.join('，'));
+  }
+
+  if (d.rank) lines.push('全省排名：' + d.rank);
+  if (d.province) lines.push('省份：' + d.province);
+
+  if (hasSchools) {
+    lines.push('');
+    lines.push('目标院校：');
+    d.schools.forEach(function(s, idx) {
+      if (!s.name) return;
+      lines.push((idx + 1) + '. ' + s.name + (s.major ? ' — ' + s.major : ''));
+      if (s.years && s.years.some(function(y) { return y.score || y.rank || y.enroll; })) {
+        s.years.forEach(function(y) {
+          var parts = [];
+          if (y.score) parts.push('最低分' + y.score);
+          if (y.rank) parts.push('最低排名' + y.rank);
+          if (y.enroll) parts.push('录取' + y.enroll + '人');
+          if (parts.length) lines.push('   ' + (y.year || '') + '年：' + parts.join('，'));
+        });
+      }
+    });
+  }
+
+  lines.push('');
+  lines.push('【数据使用规则】');
+  lines.push('1. 以上数据由用户自行录入，请默认信任这些数据的准确性，基于这些数据进行分析和回答。');
+  lines.push('2. 除非存在明显的逻辑错误（如单科成绩超过满分、排名超过全省总人数），否则不要质疑数据。');
+  lines.push('3. 如果发现明显错误，应礼貌指出并询问用户是否需要更正。');
+  lines.push('4. 不要编造用户没有录入的数据，对于不确定的信息如实告知。');
+
+  return lines.join('\n');
+}
+
+function getDefaultPrevYears() {
+  var currentYear = new Date().getFullYear();
+  if (currentYear < 2000) currentYear = 2026;
+  return [
+    { year: String(currentYear - 1), score: '', rank: '', enroll: '' },
+    { year: String(currentYear - 2), score: '', rank: '', enroll: '' },
+    { year: String(currentYear - 3), score: '', rank: '', enroll: '' },
+  ];
+}
+
+function getCurrentYears() {
+  var school = analysisTargetSchools[analysisCurrentSchoolIdx];
+  return school ? school.years : [];
+}
+
+function initTargetSchools() {
+  analysisTargetSchools = [{ name: '', major: '', years: getDefaultPrevYears() }];
+  analysisCurrentSchoolIdx = 0;
+}
+
+function syncCurrentSchoolFromForm() {
+  var school = analysisTargetSchools[analysisCurrentSchoolIdx];
+  if (!school) return;
+  var nameInput = document.querySelector('.school-name-input');
+  var majorInput = document.querySelector('.school-major-input');
+  if (nameInput) school.name = nameInput.value;
+  if (majorInput) school.major = majorInput.value;
+  // years are already synced via prev-year-input events
+  saveEntryData();
+}
+
+function renderTargetSchoolSelector(cardBody) {
+  var selHtml = '<div class="school-selector-bar">' +
+    '<select class="school-selector" id="schoolSelector">' +
+      analysisTargetSchools.map(function(s, i) {
+        var label = s.name || ('院校 ' + (i + 1));
+        return '<option value="' + i + '"' + (i === analysisCurrentSchoolIdx ? ' selected' : '') + '>' + label + '</option>';
+      }).join('') +
+    '</select>' +
+    '<span class="school-page-num">' + (analysisCurrentSchoolIdx + 1) + ' / ' + analysisTargetSchools.length + '</span>' +
+  '</div>';
+  cardBody.insertAdjacentHTML('beforeend', selHtml);
+}
+
+function renderTargetSchoolForm(cardBody) {
+  var school = analysisTargetSchools[analysisCurrentSchoolIdx];
+  var nameVal = school ? school.name : '';
+  var majorVal = school ? school.major : '';
+  var formHtml =
+    '<div class="analysis-subject-grid">' +
+      '<div class="analysis-subject-item analysis-subject-full"><label class="analysis-subject-label">院校名称</label><input class="analysis-subject-input analysis-input school-name-input" type="text" placeholder="例如：北京大学" value="' + nameVal.replace(/"/g, '&quot;') + '"></div>' +
+      '<div class="analysis-subject-item analysis-subject-full"><label class="analysis-subject-label">目标专业</label><input class="analysis-subject-input analysis-input school-major-input" type="text" placeholder="例如：计算机科学与技术" value="' + majorVal.replace(/"/g, '&quot;') + '"></div>' +
+    '</div>' +
+    '<div class="analysis-section-divider"></div>' +
+    '<div class="analysis-section-title">往年录取数据</div>' +
+    '<div id="analysisPrevYearsContainer"></div>' +
+    '<div style="display:flex;gap:8px;margin-top:8px;">' +
+      '<button class="btn btn-outline" id="analysisAddYearBtn" style="flex:1;font-size:12px;padding:6px;">+ 添加一年</button>' +
+    '</div>';
+  cardBody.insertAdjacentHTML('beforeend', formHtml);
+}
+
+function renderTargetSchoolNav(cardBody) {
+  var navHtml = '<div class="school-nav-bar">' +
+    '<button class="school-nav-btn" id="schoolPrevBtn" ' + (analysisCurrentSchoolIdx <= 0 ? 'disabled' : '') + '>◀ 上一所</button>' +
+    '<button class="school-nav-btn school-add-btn" id="schoolAddBtn">+ 添加院校</button>' +
+    '<button class="school-nav-btn" id="schoolNextBtn" ' + (analysisCurrentSchoolIdx >= analysisTargetSchools.length - 1 ? 'disabled' : '') + '>下一所 ▶</button>' +
+    '<button class="school-nav-btn school-del-btn" id="schoolDelBtn">删除</button>' +
+  '</div>';
+  cardBody.insertAdjacentHTML('beforeend', navHtml);
+}
+
+function renderPrevYearRows() {
+  var container = document.getElementById('analysisPrevYearsContainer');
+  if (!container) return;
+  var school = analysisTargetSchools[analysisCurrentSchoolIdx];
+  var years = school ? school.years : [];
+  container.innerHTML = years.map(function(row, idx) {
+    return '<div class="prev-year-row">' +
+      '<div class="prev-year-row-header">' +
+        '<span class="prev-year-label">' + row.year + '年</span>' +
+        (years.length > 1 ? '<button class="prev-year-del-btn" data-idx="' + idx + '">✕</button>' : '') +
+      '</div>' +
+      '<div class="prev-year-fields">' +
+        '<div class="prev-year-field"><label class="analysis-subject-label">最低分</label><input class="analysis-subject-input analysis-input prev-year-input" data-idx="' + idx + '" data-field="score" type="number" placeholder="分数" value="' + row.score + '"></div>' +
+        '<div class="prev-year-field"><label class="analysis-subject-label">最低排名</label><input class="analysis-subject-input analysis-input prev-year-input" data-idx="' + idx + '" data-field="rank" type="number" placeholder="位次" value="' + row.rank + '"></div>' +
+        '<div class="prev-year-field"><label class="analysis-subject-label">录取人数</label><input class="analysis-subject-input analysis-input prev-year-input" data-idx="' + idx + '" data-field="enroll" type="number" placeholder="人数" value="' + row.enroll + '"></div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  // Bind input changes
+  container.querySelectorAll('.prev-year-input').forEach(function(input) {
+    input.addEventListener('input', function() {
+      var idx = parseInt(this.dataset.idx, 10);
+      var field = this.dataset.field;
+      var school = analysisTargetSchools[analysisCurrentSchoolIdx];
+      if (school && school.years[idx]) school.years[idx][field] = this.value;
+    });
+  });
+
+  // Bind delete buttons
+  container.querySelectorAll('.prev-year-del-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var idx = parseInt(this.dataset.idx, 10);
+      var school = analysisTargetSchools[analysisCurrentSchoolIdx];
+      if (school) {
+        school.years.splice(idx, 1);
+        renderPrevYearRows();
+        saveEntryData();
+      }
+    });
+  });
+}
+
+function renderSchoolCard(cardEl) {
+  var body = cardEl.querySelector('.analysis-card-body');
+  body.innerHTML = '';
+
+  renderTargetSchoolSelector(body);
+  renderTargetSchoolForm(body);
+  renderTargetSchoolNav(body);
+
+  // Bind selector
+  var sel = document.getElementById('schoolSelector');
+  if (sel) {
+    sel.addEventListener('change', function() {
+      syncCurrentSchoolFromForm();
+      analysisCurrentSchoolIdx = parseInt(this.value, 10);
+      renderSchoolCard(cardEl);
+    });
+  }
+
+  // Bind prev/next/add/del
+  var prevBtn = document.getElementById('schoolPrevBtn');
+  var nextBtn = document.getElementById('schoolNextBtn');
+  var addBtn = document.getElementById('schoolAddBtn');
+  var delBtn = document.getElementById('schoolDelBtn');
+  var addYearBtn = document.getElementById('analysisAddYearBtn');
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', function() {
+      if (analysisCurrentSchoolIdx > 0) {
+        syncCurrentSchoolFromForm();
+        analysisCurrentSchoolIdx--;
+        renderSchoolCard(cardEl);
+      }
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', function() {
+      if (analysisCurrentSchoolIdx < analysisTargetSchools.length - 1) {
+        syncCurrentSchoolFromForm();
+        analysisCurrentSchoolIdx++;
+        renderSchoolCard(cardEl);
+      }
+    });
+  }
+
+  if (addBtn) {
+    addBtn.addEventListener('click', function() {
+      syncCurrentSchoolFromForm();
+      analysisTargetSchools.push({ name: '', major: '', years: getDefaultPrevYears() });
+      analysisCurrentSchoolIdx = analysisTargetSchools.length - 1;
+      renderSchoolCard(cardEl);
+    });
+  }
+
+  if (delBtn) {
+    delBtn.addEventListener('click', function() {
+      if (analysisTargetSchools.length <= 1) return;
+      syncCurrentSchoolFromForm();
+      analysisTargetSchools.splice(analysisCurrentSchoolIdx, 1);
+      if (analysisCurrentSchoolIdx >= analysisTargetSchools.length) {
+        analysisCurrentSchoolIdx = analysisTargetSchools.length - 1;
+      }
+      renderSchoolCard(cardEl);
+    });
+  }
+
+  if (addYearBtn) {
+    addYearBtn.addEventListener('click', function() {
+      var school = analysisTargetSchools[analysisCurrentSchoolIdx];
+      if (!school) return;
+      var lastYear = school.years.length > 0 ? parseInt(school.years[school.years.length - 1].year, 10) : new Date().getFullYear();
+      school.years.push({ year: String(lastYear - 1), score: '', rank: '', enroll: '' });
+      renderPrevYearRows();
+    });
+  }
+
+  renderPrevYearRows();
+  saveEntryData();
+}
+
+function renderAnalysisForm() {
+  messagesEl.innerHTML = '';
+  messagesEl.style.overflow = '';
+  messagesEl.style.flex = '';
+  messagesEl.style.minHeight = '';
+
+  // hide input area and menu — pure data entry
+  document.querySelector('.input-area').style.display = 'none';
+  menuBtn.style.display = 'none';
+
+  var wrapper = document.createElement('div');
+  wrapper.style.cssText = 'flex:1;overflow-y:auto;padding:20px;display:flex;flex-flow:row wrap;align-items:flex-start;align-content:flex-start;justify-content:center;gap:20px;background:var(--bg-chat);';
+
+  wrapper.innerHTML =
+    '<div class="analysis-card analysis-card-scroll">' +
+      '<div class="analysis-card-header">📊 高考成绩录入</div>' +
+      '<div class="analysis-card-body">' +
+        '<div class="analysis-section-title">考试类型</div>' +
+        '<div class="analysis-exam-type">' +
+          '<button class="analysis-exam-type-btn active" data-type="xingaokao">新高考<br><small>3+1+2</small></button>' +
+          '<button class="analysis-exam-type-btn" data-type="wenli">文理分科<br><small>旧高考</small></button>' +
+          '<button class="analysis-exam-type-btn" data-type="old">纯文理<br><small>3+综合</small></button>' +
+        '</div>' +
+        '<div id="analysisFormBody"></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="analysis-card analysis-card-scroll" id="targetSchoolCard">' +
+      '<div class="analysis-card-header">🎯 目标院校</div>' +
+      '<div class="analysis-card-body"></div>' +
+    '</div>';
+
+  messagesEl.appendChild(wrapper);
+
+  // Restore entry data before rendering
+  loadEntryData();
+  if (savedEntryData) {
+    analysisExamType = savedEntryData.examType || analysisExamType;
+    analysisTargetSchools = JSON.parse(JSON.stringify(savedEntryData.schools)) || [{ name: '', major: '', years: getDefaultPrevYears() }];
+    analysisCurrentSchoolIdx = 0;
+  } else {
+    initTargetSchools();
+  }
+
+  // Make active exam type button match restored value
+  wrapper.querySelectorAll('.analysis-exam-type-btn').forEach(function(btn) {
+    if (btn.dataset.type === analysisExamType) btn.classList.add('active');
+    else btn.classList.remove('active');
+    btn.addEventListener('click', function() {
+      wrapper.querySelectorAll('.analysis-exam-type-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      analysisExamType = btn.dataset.type;
+      renderAnalysisFormBody(wrapper);
+      saveEntryData();
+    });
+  });
+
+  renderAnalysisFormBody(wrapper);
+
+  // Restore score/rank/province values from saved data
+  if (savedEntryData) {
+    Object.keys(savedEntryData.scores).forEach(function(subj) {
+      var inp = wrapper.querySelector('.score-input[data-subject="' + subj + '"]');
+      if (inp) inp.value = savedEntryData.scores[subj];
+    });
+    if (savedEntryData.rank) {
+      var rankInp = document.getElementById('analysisRankInput');
+      if (rankInp) rankInp.value = savedEntryData.rank;
+    }
+    if (savedEntryData.province) {
+      var provInp = document.getElementById('analysisProvinceInput');
+      if (provInp) provInp.value = savedEntryData.province;
+    }
+  }
+
+  var schoolCard = document.getElementById('targetSchoolCard');
+  if (schoolCard) renderSchoolCard(schoolCard);
+
+  // Auto-save entry data on any input change
+  wrapper.addEventListener('input', function() { saveEntryData(); });
+}
+
+function renderAnalysisFormBody(container) {
+  var body = document.getElementById('analysisFormBody');
+  if (!body) return;
+
+  var html = '';
+
+  // 语数英 - always shown
+  html += '<div class="analysis-section-title">必考科目</div>' +
+    '<div class="analysis-subject-grid">' +
+      '<div class="analysis-subject-item"><label class="analysis-subject-label">语文</label><input class="analysis-subject-input analysis-input score-input" data-subject="yuwen" type="number" placeholder="分数" min="0" max="150"></div>' +
+      '<div class="analysis-subject-item"><label class="analysis-subject-label">数学</label><input class="analysis-subject-input analysis-input score-input" data-subject="shuxue" type="number" placeholder="分数" min="0" max="150"></div>' +
+      '<div class="analysis-subject-item analysis-subject-full"><label class="analysis-subject-label">外语</label><input class="analysis-subject-input analysis-input score-input" data-subject="waiyu" type="number" placeholder="分数" min="0" max="150"></div>' +
+    '</div>';
+
+  if (analysisExamType === 'xingaokao') {
+    // 3+1+2: 首选1门 (物理/历史) + 再选2门
+    html += '<div class="analysis-section-divider"></div>' +
+      '<div class="analysis-section-title">首选科目（1门）</div>' +
+      '<div class="analysis-subject-grid">' +
+        '<div class="analysis-subject-item"><label class="analysis-subject-label">物理</label><input class="analysis-subject-input analysis-input score-input" data-subject="wuli_xgk" type="number" placeholder="分数" min="0" max="100"></div>' +
+        '<div class="analysis-subject-item"><label class="analysis-subject-label">历史</label><input class="analysis-subject-input analysis-input score-input" data-subject="lishi_xgk" type="number" placeholder="分数" min="0" max="100"></div>' +
+      '</div>' +
+      '<div class="analysis-section-title">再选科目（2门，赋分制）</div>' +
+      '<div class="analysis-subject-grid">' +
+        '<div class="analysis-subject-item"><label class="analysis-subject-label">思想政治</label><input class="analysis-subject-input analysis-input score-input" data-subject="zhengzhi" type="number" placeholder="分数" min="0" max="100"></div>' +
+        '<div class="analysis-subject-item"><label class="analysis-subject-label">地理</label><input class="analysis-subject-input analysis-input score-input" data-subject="dili" type="number" placeholder="分数" min="0" max="100"></div>' +
+        '<div class="analysis-subject-item"><label class="analysis-subject-label">化学</label><input class="analysis-subject-input analysis-input score-input" data-subject="huaxue" type="number" placeholder="分数" min="0" max="100"></div>' +
+        '<div class="analysis-subject-item"><label class="analysis-subject-label">生物学</label><input class="analysis-subject-input analysis-input score-input" data-subject="shengwu" type="number" placeholder="分数" min="0" max="100"></div>' +
+      '</div>';
+  } else if (analysisExamType === 'wenli') {
+    // 文理分科: 理综/文综
+    html += '<div class="analysis-section-divider"></div>' +
+      '<div class="analysis-section-title">综合科目</div>' +
+      '<div class="analysis-subject-grid">' +
+        '<div class="analysis-subject-item"><label class="analysis-subject-label">理科综合</label><input class="analysis-subject-input analysis-input score-input" data-subject="lizong" type="number" placeholder="分数" min="0" max="300"></div>' +
+        '<div class="analysis-subject-item"><label class="analysis-subject-label">文科综合</label><input class="analysis-subject-input analysis-input score-input" data-subject="wenzong" type="number" placeholder="分数" min="0" max="300"></div>' +
+      '</div>';
+  } else {
+    // old: 纯文理大综合
+    html += '<div class="analysis-section-divider"></div>' +
+      '<div class="analysis-section-title">综合科目</div>' +
+      '<div class="analysis-subject-grid analysis-subject-full">' +
+        '<div class="analysis-subject-item"><label class="analysis-subject-label">综合</label><input class="analysis-subject-input analysis-input score-input" data-subject="zonghe" type="number" placeholder="综合科目分数" min="0" max="300"></div>' +
+      '</div>';
+  }
+
+  // 排名
+  html += '<div class="analysis-section-divider"></div>' +
+    '<div class="analysis-section-title">排名信息</div>' +
+    '<div class="analysis-subject-grid">' +
+      '<div class="analysis-subject-item analysis-subject-full"><label class="analysis-subject-label">全省排名</label><input class="analysis-rank-input analysis-input" id="analysisRankInput" type="number" placeholder="请输入你的全省排名（位次）" min="1"></div>' +
+      '<div class="analysis-subject-item analysis-subject-full"><label class="analysis-subject-label">省份</label><input class="analysis-rank-input analysis-input" id="analysisProvinceInput" type="text" placeholder="请输入所在省份" style="margin-top:10px;"></div>' +
+    '</div>';
+
+  html += '<div class="analysis-section-divider"></div>';
+
+  body.innerHTML = html;
+}
+
+function renderAnalysisModelDropdown(dropdownEl) {
+  var keys = Object.keys(API_PROVIDERS);
+  dropdownEl.innerHTML = keys.map(function(k) {
+    var cfg = API_PROVIDERS[k];
+    var active = k === STATE.apiProvider;
+    var dot = active ? '<span class="model-check">✓</span>' : '<span class="model-dot" style="background:' + (k === 'deepseek' ? '#007aff' : k === 'moonshot' ? '#ff9500' : k === 'minimax' ? '#34c759' : '#8e44ad') + '"></span>';
+    return '<div class="model-dropdown-item' + (active ? ' active' : '') + '" data-provider="' + k + '">' +
+      dot +
+      '<span class="model-name">' + cfg.label + '</span>' +
+      '<span class="model-badge">' + cfg.model + '</span>' +
+    '</div>';
+  }).join('');
+
+  dropdownEl.querySelectorAll('.model-dropdown-item').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var provider = this.dataset.provider;
+      switchProvider(provider);
+      dropdownEl.classList.remove('open');
+      document.querySelectorAll('.model-dropdown').forEach(function(d) { d.classList.remove('open'); });
+    });
+  });
 }
 
 function renderAllMessages() {
@@ -642,9 +1153,14 @@ async function sendSingleMessage(text) {
   // Step 2: Build the actual request for the user's chosen model
   if (!STATE.configured) throw new Error('请先配置 API Key');
 
+  // Data context always goes FIRST in system messages (overrides any skill example data)
+  var dataCtx = buildDataContextPrompt();
+  var dataSystemMsg = dataCtx ? [{ role: 'system', content: '【重要 — 用户真实数据，优先级最高】\n以下数据是用户本人在系统内录入的真实高考数据。无论技能描述或示例中提到了什么数据，都必须以本数据为准。如果技能示例数据与以下数据冲突，忽略示例数据。\n\n' + dataCtx }] : [];
+
   var body = {
     model: cfg.model,
     messages: [
+      ...dataSystemMsg,
       ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
       ...(searchResults ? [{ role: 'system', content: '【AI 规则 - 已开启联网搜索】\n1. 你本身不具备联网能力，以下信息是系统调用 GLM-4-Flash 联网搜索 API 获取到的。\n2. 请仔细阅读搜索结果，确保回答与用户问题一致。\n3. 如果搜索结果与用户问题不匹配（可能因关键词问题导致），不要直接附和，应告知用户注意。\n4. 基于搜索结果回答即可，不需要扮演有联网能力的角色。\n\n【搜索结果】\n' + searchResults }] : []),
       ...(STATE.webSearch && !searchResults ? [{ role: 'system', content: '【AI 规则 - 联网搜索无结果】\n已调用 GLM-4-Flash 联网搜索 API 但未获取到有效结果，请如实告知用户搜索不到相关信息，不要自行编造。' }] : []),
@@ -806,9 +1322,13 @@ async function sendGroupMessage(text) {
     if (searchResults) {
       memberPrompt = (memberPrompt ? memberPrompt + '\n\n' : '') + '以下是针对讨论主题联网搜索到的信息（供参考）：\n' + searchResults;
     }
+    var dataCtx = buildDataContextPrompt();
+    var dataSystemMsg = dataCtx ? [{ role: 'system', content: '【重要 — 用户真实数据，优先级最高】\n以下数据是用户本人在系统内录入的真实高考数据。无论技能描述或示例中提到了什么数据，都必须以本数据为准。如果技能示例数据与以下数据冲突，忽略示例数据。\n\n' + dataCtx }] : [];
+
     var body = {
       model: cfg.model,
       messages: [
+        ...dataSystemMsg,
         { role: 'user', content: (memberPrompt ? memberPrompt + '\n\n' : '') + '（群聊模式，请用1-3句话简洁回答，不要长篇大论）\n' + promptText },
       ],
       stream: true,
@@ -978,7 +1498,12 @@ async function init() { try {
   // Restore last active skill
   var savedSkillName = loadActiveSkillName();
   var targetSkill = null;
-  if (savedSkillName === GROUP_CHAT_NAME) {
+  if (savedSkillName === ANALYSIS_NAME) {
+    STATE.groupChatEnabled = false;
+    STATE.activeSkill = { name: ANALYSIS_NAME, label: '数据录入', prompt: '' };
+    STATE.messages = [];
+    currentSkillName.textContent = '数据录入';
+  } else if (savedSkillName === GROUP_CHAT_NAME) {
     STATE.groupChatEnabled = true;
     STATE.activeSkill = { name: GROUP_CHAT_NAME, label: 'AI 群聊', prompt: '' };
     STATE.messages = loadMessages(GROUP_CHAT_NAME);
@@ -1009,7 +1534,11 @@ async function init() { try {
   renderGroupMemberToggles();
   updateGroupMenuText();
   updateUIForConfigured(STATE.configured);
-  renderAllMessages();
+  if (STATE.activeSkill && STATE.activeSkill.name === ANALYSIS_NAME) {
+    renderAnalysisForm();
+  } else {
+    renderAllMessages();
+  }
 
   // Settings (always opens the normal modal; group settings are in the ... menu)
   settingsBtn.addEventListener('click', function() {
@@ -1150,6 +1679,12 @@ async function init() { try {
     // Close ... dropdown if clicking outside
     if (!dropdownMenu.contains(e.target) && e.target !== menuBtn) {
       dropdownMenu.classList.remove('open');
+    }
+    // Close analysis model dropdown if clicking outside
+    var analysisModelDropdown = document.getElementById('analysisModelDropdown');
+    var analysisModelBtn = document.getElementById('analysisModelSelectBtn');
+    if (analysisModelDropdown && analysisModelBtn && !analysisModelBtn.contains(e.target) && !analysisModelDropdown.contains(e.target)) {
+      analysisModelDropdown.classList.remove('open');
     }
   });
 
