@@ -529,6 +529,17 @@ html, body {
   margin-top: 1px;
 }
 
+.chat-header-footer-note {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  opacity: 0.6;
+}
+
+.chat-header-footer-note a:hover {
+  opacity: 1;
+}
+
 /* ===== Messages ===== */
 .messages {
   flex: 1;
