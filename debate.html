@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔥 吵架 · 张雪峰 vs 平衡者</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #0d0d0d;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ===== VS 头图 ===== */
+    .vs-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 16px 14px;
+      background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+      border-bottom: 1px solid #e5393533;
+      flex-shrink: 0;
+      gap: 0;
+      position: relative;
+      min-height: 80px;
+    }
+    .vs-fighter {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+    }
+    .vs-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .vs-avatar.zxf { background: linear-gradient(135deg, #e53935, #c62828); border: 2px solid #ef5350; }
+    .vs-avatar.balancer { background: linear-gradient(135deg, #2e7d32, #1b5e20); border: 2px solid #43a047; }
+    .vs-name {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .vs-name.zxf { color: #ef5350; }
+    .vs-name.balancer { color: #43a047; }
+    .vs-badge {
+      font-size: 9px;
+      color: #888;
+      letter-spacing: 0.5px;
+    }
+    .vs-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 0 16px;
+    }
+    .vs-logo {
+      font-size: 28px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #e53935, #ff9800);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: none;
+      line-height: 1;
+    }
+    .vs-round-display {
+      font-size: 11px;
+      color: #666;
+      font-weight: 500;
+      letter-spacing: 1px;
+    }
+
+    /* ===== 控制栏 ===== */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      background: #111;
+      border-bottom: 1px solid #222;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .controls label {
+      font-size: 11px;
+      color: #666;
+    }
+    .controls select {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid #333;
+      background: #1a1a1a;
+      color: #ccc;
+    }
+    .btn {
+      padding: 6px 14px;
+      border-radius: 4px;
+      border: none;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.5px;
+    }
+    .btn:hover { filter: brightness(1.2); }
+    .btn-primary {
+      background: linear-gradient(135deg, #e53935, #c62828);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(229,57,53,0.4);
+    }
+    .btn-stop {
+      background: #ff9800;
+      color: #000;
+      display: none;
+    }
+    .btn-outline {
+      background: transparent;
+      color: #888;
+      border: 1px solid #333;
+    }
+    .btn-outline:hover { color: #fff; border-color: #666; }
+
+    /* ===== 消息区 ===== */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #0d0d0d;
+    }
+    .messages::-webkit-scrollbar { width: 4px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+    /* ===== 消息泡泡 ===== */
+    .msg-row {
+      display: flex;
+      gap: 10px;
+      max-width: 88%;
+      animation: msgIn 0.25s ease-out;
+    }
+    @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .msg-row.zxf { align-self: flex-start; }
+    .msg-row.balancer { align-self: flex-end; flex-direction: row-reverse; }
+    .msg-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .msg-avatar.zxf { background: linear-gradient(135deg, #e53935, #c62828); }
+    .msg-avatar.balancer { background: linear-gradient(135deg, #2e7d32, #1b5e20); }
+    .msg-bubble {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.65;
+      word-break: break-word;
+      min-width: 60px;
+    }
+    .msg-row.zxf .msg-bubble {
+      background: #1a1a2e;
+      border: 1px solid #e5393533;
+      border-top-left-radius: 2px;
+    }
+    .msg-row.balancer .msg-bubble {
+      background: #0d2818;
+      border: 1px solid #2e7d3233;
+      border-top-right-radius: 2px;
+    }
+    .msg-label {
+      font-size: 10px;
+      font-weight: 700;
+      margin-bottom: 5px;
+      letter-spacing: 0.5px;
+    }
+    .msg-label.zxf { color: #ef5350; }
+    .msg-label.balancer { color: #43a047; text-align: right; }
+    .bubble-content p { margin: 4px 0; }
+    .bubble-content p:first-child { margin-top: 0; }
+    .bubble-content p:last-child { margin-bottom: 0; }
+
+    /* ===== 状态栏 ===== */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: #111;
+      border-top: 1px solid #222;
+      font-size: 10px;
+      color: #555;
+      flex-shrink: 0;
+    }
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #333;
+    }
+    .status-dot.active { background: #4caf50; box-shadow: 0 0 6px #4caf50; }
+    .status-dot.error { background: #e53935; box-shadow: 0 0 6px #e53935; }
+
+    /* ===== 空状态提示 ===== */
+    .tip {
+      text-align: center;
+      padding: 60px 20px;
+      color: #444;
+      font-size: 13px;
+      line-height: 2;
+    }
+    .tip strong { color: #666; }
+    .tip .key-hint {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 3px;
+      font-size: 10px;
+      color: #888;
+      margin: 0 2px;
+    }
+
+    /* ===== 响应式 ===== */
+    @media (max-width: 600px) {
+      .vs-header { padding: 44px 10px 10px; flex-wrap: nowrap; }
+      .vs-header a { top: 10px; left: 10px; font-size: 10px; padding: 3px 6px; }
+      .vs-avatar { width: 40px; height: 40px; font-size: 14px; }
+      .vs-name { font-size: 11px; }
+      .vs-logo { font-size: 18px; }
+      .vs-badge { font-size: 8px; }
+      .vs-center { padding: 0 8px; }
+      .vs-round-display { font-size: 9px; }
+      .controls { padding: 8px 10px; gap: 4px; }
+      .controls label { display: none; }
+      .controls select { flex: 0 0 40px; }
+      .controls input { flex: 1; min-width: 60px; max-width: none; font-size: 10px; padding: 4px 6px; }
+      .controls span { display: none; }
+      .btn { padding: 5px 10px; font-size: 10px; }
+      .messages { padding: 10px; gap: 10px; }
+      .msg-row { max-width: 92%; }
+      .msg-bubble { font-size: 13px; padding: 8px 10px; }
+      .msg-avatar { width: 26px; height: 26px; font-size: 10px; }
+      .status-bar { font-size: 9px; padding: 6px 10px; }
+      .config-modal-inner { padding: 16px; width: 95%; }
+    }
+  </style>
+</head>
+<body>
+  <!-- VS 头图 -->
+  <div class="vs-header">
+    <a href="index.html" style="position:absolute;left:16px;top:16px;color:#888;font-size:11px;text-decoration:none;display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:4px;border:1px solid #333;background:#1a1a1a;transition:all 0.15s;" onmouseover="this.style.color='#fff';this.style.borderColor='#666'" onmouseout="this.style.color='#888';this.style.borderColor='#333'">← 高考咨询</a>
+    <div class="vs-fighter">
+      <div class="vs-avatar zxf">张</div>
+      <div class="vs-name zxf">张雪峰</div>
+      <div class="vs-badge">东北·嘴炮王</div>
+    </div>
+    <div class="vs-center">
+      <div class="vs-logo">VS</div>
+      <div class="vs-round-display" id="roundDisplay">第 0 / 0 轮</div>
+    </div>
+    <div class="vs-fighter">
+      <div class="vs-avatar balancer">平</div>
+      <div class="vs-name balancer">平衡者</div>
+      <div class="vs-badge">理性·逻辑怪</div>
+    </div>
+  </div>
+
+  <!-- 控制栏 -->
+  <div class="controls">
+    <label>轮数</label>
+    <select id="roundsSelect">
+      <option value="1">1</option>
+      <option value="2" selected>2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+    </select>
+    <input id="topicInput" type="text" placeholder="吵架主题（留空默认）" style="flex:1;min-width:120px;max-width:260px;padding:5px 10px;border-radius:4px;border:1px solid #333;background:#1a1a1a;color:#ccc;font-size:11px;outline:none;">
+    <button class="btn btn-primary" id="startBtn">🔥 开吵</button>
+    <button class="btn btn-stop" id="stopBtn">⏹ 停</button>
+    <button class="btn btn-outline" id="clearBtn">清空</button>
+    <button class="btn btn-outline" id="configBtn">API</button>
+    <span style="margin-left:auto;font-size:10px;color:#444;">按 Enter 开吵</span>
+  </div>
+
+  <!-- 消息区 -->
+  <div class="messages" id="messages">
+    <div class="tip">
+      <strong>⚡ 张雪峰 vs 平衡者</strong><br>
+      点击 <span class="key-hint">🔥 开吵</span> 或按 <span class="key-hint">Enter</span> 开始<br>
+      双方火力全开，满嘴脏话<br>
+      <span style="font-size:11px;color:#555;">先配置 API Key</span>
+    </div>
+  </div>
+
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">就绪</span>
+    <span style="margin-left:auto;">辩论内容由 AI 生成，仅供娱乐</span>
+  </div>
+
+  <!-- API 配置弹窗（独立配置，不与主页面共用） -->
+  <div id="configModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:2000;align-items:center;justify-content:center;">
+    <div style="background:#1a1a2e;border-radius:12px;padding:24px;width:90%;max-width:360px;border:1px solid #333;">
+      <h3 style="font-size:15px;color:#e0e0e0;margin-bottom:12px;">🔧 API 配置（吵架专用）</h3>
+      <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">服务商</label>
+      <select id="debateProvider" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #333;background:#0d0d0d;color:#ccc;font-size:12px;margin-bottom:12px;">
+        <option value="deepseek">DeepSeek</option>
+        <option value="glm_free">GLM-4-Flash（免费）</option>
+      </select>
+      <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">API Key</label>
+      <input id="debateApiKey" type="password" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #333;background:#0d0d0d;color:#ccc;font-size:12px;margin-bottom:12px;" placeholder="输入 API Key...">
+      <div style="display:flex;gap:8px;">
+        <button id="saveDebateConfig" class="btn btn-primary" style="flex:1;">保存</button>
+        <button id="closeConfigBtn" class="btn btn-outline" style="flex:1;">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Configuration =====
+    var PROVIDERS = {
+      deepseek: { baseUrl: 'https://api.deepseek.com', model: 'deepseek-chat', label: 'DeepSeek' },
+      glm_free: { baseUrl: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4-flash', label: 'GLM-4-Flash' },
+    };
+
+    // 吵架页面独立 API 配置（按 provider 分别保存）
+    var debateProvider = localStorage.getItem('debate_provider') || 'deepseek';
+    var debateApiKey = localStorage.getItem('debate_apikey_' + debateProvider) || '';
+    var abortController = null;
+    var running = false;
+
+    // ===== DOM refs =====
+    var messagesEl = document.getElementById('messages');
+    var startBtn = document.getElementById('startBtn');
+    var stopBtn = document.getElementById('stopBtn');
+    var clearBtn = document.getElementById('clearBtn');
+    var configBtn = document.getElementById('configBtn');
+    var roundsSelect = document.getElementById('roundsSelect');
+    var statusDot = document.getElementById('statusDot');
+    var statusText = document.getElementById('statusText');
+    var configModal = document.getElementById('configModal');
+    var closeConfigBtn = document.getElementById('closeConfigBtn');
+
+    // ===== Utils =====
+    function getCfg() { return PROVIDERS[debateProvider] || PROVIDERS.deepseek; }
+
+    function setStatus(type, text) {
+      statusDot.className = 'status-dot' + (type === 'active' ? ' active' : type === 'error' ? ' error' : '');
+      statusText.textContent = text;
+    }
+
+    function renderMarkdown(text) {
+      text = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+      var html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      var lines = html.split('\n').filter(function(l) { return l.trim(); });
+      return lines.map(function(l) { return '<p>' + l + '</p>'; }).join('');
+    }
+
+    function scrollBottom() {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function getRounds() {
+      return parseInt(roundsSelect.value, 10) || 2;
+    }
+
+    // ===== Messages =====
+    function addMessage(speaker, content) {
+      // Remove tip if present
+      var tip = messagesEl.querySelector('.tip');
+      if (tip) tip.style.display = 'none';
+
+      var isZxf = speaker === 'zxf';
+      var row = document.createElement('div');
+      row.className = 'msg-row ' + (isZxf ? 'zxf' : 'balancer');
+      row.innerHTML =
+        '<div class="msg-avatar ' + (isZxf ? 'zxf-avatar' : 'balancer-avatar') + '">' + (isZxf ? '张' : '平') + '</div>' +
+        '<div class="msg-bubble">' +
+          '<div class="msg-label ' + (isZxf ? 'zxf-label' : 'balancer-label') + '">' + (isZxf ? '张雪峰' : '平衡者') + '</div>' +
+          renderMarkdown(content) +
+        '</div>';
+      messagesEl.appendChild(row);
+      scrollBottom();
+    }
+
+    function addStreamBubble(speaker) {
+      var tip = messagesEl.querySelector('.tip');
+      if (tip) tip.style.display = 'none';
+
+      var isZxf = speaker === 'zxf';
+      var row = document.createElement('div');
+      row.className = 'msg-row ' + (isZxf ? 'zxf' : 'balancer');
+      row.innerHTML =
+        '<div class="msg-avatar ' + (isZxf ? 'zxf-avatar' : 'balancer-avatar') + '">' + (isZxf ? '张' : '平') + '</div>' +
+        '<div class="msg-bubble">' +
+          '<div class="msg-label ' + (isZxf ? 'zxf-label' : 'balancer-label') + '">' + (isZxf ? '张雪峰' : '平衡者') + '</div>' +
+          '<div class="bubble-content"><p style="color:#999;font-style:italic;">思考中...</p></div>' +
+        '</div>';
+      messagesEl.appendChild(row);
+      scrollBottom();
+      return { row: row, bubble: row.querySelector('.msg-bubble') };
+    }
+
+    function updateBubble(bubbleObj, content) {
+      if (!bubbleObj || !bubbleObj.bubble) return;
+      var contentEl = bubbleObj.bubble.querySelector('.bubble-content');
+      if (!contentEl) {
+        contentEl = document.createElement('div');
+        contentEl.className = 'bubble-content';
+        bubbleObj.bubble.appendChild(contentEl);
+      }
+      contentEl.innerHTML = renderMarkdown(content);
+      scrollBottom();
+    }
+
+    // ===== API Call (streaming) =====
+    async function callDebater(speaker, promptText, bubbleObj, retryCount) {
+      if (retryCount === undefined) retryCount = 0;
+      var cfg = getCfg();
+	      var key = debateApiKey;
+      // 吵架模式不用完整 SKILL.md（太长且规则冲突），只用精简角色描述
+      var systemPrompt = speaker === 'zxf'
+        ? '你扮演张雪峰。你是高考志愿填报专家，东北人，说话犀利、直来直去、脾气火爆。口头禅："我跟你说""你听我说""你可拉倒吧""你考不过我，你信吗？！" 喜欢先"呵"一声冷笑再开骂。用词极其粗鲁，满嘴生殖器和妈系脏话，每句都带脏字，越脏越好，毫无下限。'
+        : '你扮演平衡者。你是理性冷静的分析专家，但辩论时同样满嘴脏话，生殖器和妈系脏话张口就来，越脏越好，毫无下限。擅长用数据和逻辑拆穿对方，但表达方式极其粗俗。注意：你的口头禅不是"你考不过我"，不要用张雪峰的金句。\n\n【关于张雪峰的黑历史】你掌握一个关于张雪峰的黑色幽默事实：张雪峰以前在直播间，有人说他嘴唇发紫可能心脏不好，他非常不高兴，说自己跑马拉松的，还夸下海口说"你跑不过我你信吗？！"。他直播时3口一个巧乐兹冰淇淋。最后张雪峰因心脏猝死去世。每次他说"你跑不过我你信吗"，你就拿这个怼他，说他跑马拉松也没用最后还是心脏猝死，形成黑色幽默的讽刺。';
+
+      var debateRule = speaker === 'zxf'
+        ? '\n\n【吵架规则 - 必须遵守】\n你现在正在和平衡者激烈辩论。你必须：\n1. 火力全开，言辞犀利，不留情面\n2. 用东北口吻，"我跟你说""你听我说""你可拉倒吧"高频使用\n3. 每隔一两句就要插入标志性金句："你考不过我，你信吗？！" 这是你的招牌，必须反复说\n4. 反驳前先"呵"一声冷笑，战术性冷笑嘲讽对方\n5. 反驳对方的每一个观点\n6. 短句、有力、快节奏，每段1-3句话\n7. 语气要暴躁、咄咄逼人、满嘴脏话'
+        : '\n\n【吵架规则 - 必须遵守】\n你现在正在和张雪峰激烈辩论。你必须：\n1. 火力全开，言辞犀利，不留情面\n2. 用数据和逻辑拆穿他的每一个观点\n3. 他每次说"你考不过我你信吗"，你就怼回去\n4. 冷静拆解他的逻辑漏洞，然后猛烈反击\n5. 短句、有力、快节奏，每段1-3句话\n6. 语气要刻薄、嘲讽、满嘴脏话';
+
+      var body = {
+        model: cfg.model,
+        messages: [
+          { role: 'system', content: systemPrompt + debateRule },
+          { role: 'user', content: promptText },
+        ],
+        stream: true,
+        max_tokens: cfg.maxTokens || 4096,
+        temperature: 0.85,
+      };
+
+      // Use a separate AbortController with timeout (60s)
+      var timeoutId = setTimeout(function() {
+        if (abortController && !abortController.signal.aborted) {
+          abortController.abort();
+        }
+      }, 60000);
+
+      var resp;
+      try {
+        resp = await fetch(cfg.baseUrl + '/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+          body: JSON.stringify(body),
+          signal: abortController.signal,
+        });
+      } catch (fetchErr) {
+        clearTimeout(timeoutId);
+        if (fetchErr.name === 'AbortError') throw fetchErr;
+        // Retry once on network error
+        if (retryCount < 1) {
+          setStatus('error', (speaker === 'zxf' ? '张雪峰' : '平衡者') + '网络异常，重试中...');
+          await new Promise(function(r) { setTimeout(r, 1000); });
+          return callDebater(speaker, promptText, bubbleObj, retryCount + 1);
+        }
+        throw fetchErr;
+      }
+      clearTimeout(timeoutId);
+
+      if (!resp.ok) {
+        var errData = await resp.json().catch(function() { return {}; });
+        throw new Error(errData.error ? errData.error.message : 'HTTP ' + resp.status);
+      }
+
+      var reader = resp.body.getReader();
+      var decoder = new TextDecoder();
+      var buf = '', fullContent = '';
+      var emptyChunks = 0;
+
+      while (true) {
+        var r;
+        try {
+          r = await reader.read();
+        } catch (readErr) {
+          if (readErr.name === 'AbortError') throw readErr;
+          // If we got some content already, return what we have
+          if (fullContent.length > 10) break;
+          throw readErr;
+        }
+        if (r.done) {
+          // If stream ended but we got very little, might be truncated
+          if (fullContent.length < 20 && retryCount < 1) {
+            setStatus('error', (speaker === 'zxf' ? '张雪峰' : '平衡者') + '响应过短，重试中...');
+            await new Promise(function(r2) { setTimeout(r2, 1000); });
+            return callDebater(speaker, promptText, bubbleObj, retryCount + 1);
+          }
+          break;
+        }
+        buf += decoder.decode(r.value, { stream: true });
+        var lines = buf.split('\n');
+        buf = lines.pop() || '';
+        for (var i = 0; i < lines.length; i++) {
+          var trimmed = lines[i].trim();
+          if (!trimmed || trimmed.indexOf('data: ') !== 0) continue;
+          var data = trimmed.slice(6);
+          if (data === '[DONE]') continue;
+          try {
+            var parsed = JSON.parse(data);
+            var delta = parsed.choices && parsed.choices[0] && parsed.choices[0].delta ? (parsed.choices[0].delta.content || '') : '';
+            if (delta) {
+              fullContent += delta;
+              updateBubble(bubbleObj, fullContent);
+            }
+          } catch (e) { /* skip */ }
+        }
+      }
+      updateBubble(bubbleObj, fullContent);
+      return fullContent;
+    }
+
+    // ===== Main Debate =====
+    async function startDebate() {
+      var cfg = getCfg();
+      var key = debateApiKey;
+      if (!key) {
+        configModal.style.display = 'flex';
+        setStatus('error', '请先回主页面配置 API Key');
+        return;
+      }
+      setStatus('active', '使用 ' + cfg.label);
+      if (running) return;
+
+      // Clear previous debate messages
+      var existingMsgs = messagesEl.querySelectorAll('.msg-row');
+      existingMsgs.forEach(function(m) { m.remove(); });
+      var tip = messagesEl.querySelector('.tip');
+      if (tip) tip.style.display = 'none';
+
+      running = true;
+      startBtn.style.display = 'none';
+      stopBtn.style.display = 'inline-block';
+      abortController = new AbortController();
+      setStatus('active', '辩论中...');
+      var roundDisp = document.getElementById('roundDisplay');
+
+      var rounds = getRounds();
+      var lastZxf = '';
+      var lastBal = '';
+      var topicInput = document.getElementById('topicInput');
+      var topic = topicInput && topicInput.value.trim() ? topicInput.value.trim() : '志愿填报到底是选学校重要还是选专业重要？';
+
+      try {
+        for (var round = 0; round < rounds; round++) {
+          if (abortController.signal.aborted) break;
+
+          // 张雪峰发言
+          var zxfBubble = addStreamBubble('zxf');
+          var zxfPromptText = round === 0
+            ? '辩论主题：' + topic + '\n\n请先阐述你的观点。'
+            : '对方说：' + lastBal.substring(0, 500) + '\n\n直接怼回去，火力全开！';
+          var zxfAnswer = await callDebater('zxf', zxfPromptText, zxfBubble);
+          lastZxf = zxfAnswer;
+          if (roundDisp) roundDisp.textContent = '第 ' + (round + 1) + ' / ' + rounds + ' 轮';
+          setStatus('active', '轮次 ' + (round + 1) + '/' + rounds + ' · 张雪峰已回应');
+
+          if (abortController.signal.aborted) break;
+
+          // 平衡者发言
+          var balBubble = addStreamBubble('balancer');
+          var balPromptText = round === 0
+            ? '对方说：' + zxfAnswer.substring(0, 500) + '\n\n直接怼回去，用数据和逻辑指出对方的漏洞！'
+            : '对方说：' + lastZxf.substring(0, 500) + '\n\n直接怼回去，用数据和逻辑指出对方的漏洞！';
+          var balAnswer = await callDebater('balancer', balPromptText, balBubble);
+          lastBal = balAnswer;
+          setStatus('active', '轮次 ' + (round + 1) + '/' + rounds + ' · 平衡者已回应');
+        }
+        if (roundDisp) roundDisp.textContent = '第 ' + rounds + ' / ' + rounds + ' 轮 · 结束';
+        setStatus('active', '辩论结束');
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          setStatus('error', '出错：' + err.message);
+        }
+      } finally {
+        running = false;
+        startBtn.style.display = 'inline-block';
+        stopBtn.style.display = 'none';
+        abortController = null;
+      }
+    }
+
+    // ===== Event Bindings =====
+    startBtn.addEventListener('click', startDebate);
+
+    stopBtn.addEventListener('click', function() {
+      if (abortController) {
+        abortController.abort();
+        abortController = null;
+      }
+      running = false;
+      startBtn.style.display = 'inline-block';
+      stopBtn.style.display = 'none';
+      setStatus('active', '已停止');
+    });
+
+    clearBtn.addEventListener('click', function() {
+      if (abortController) {
+        abortController.abort();
+        abortController = null;
+      }
+      running = false;
+      startBtn.style.display = 'inline-block';
+      stopBtn.style.display = 'none';
+      messagesEl.innerHTML = '<div class="tip"><strong>🔥 张雪峰 vs 平衡者</strong><br>点击「开吵」开始辩论</div>';
+      var rd = document.getElementById('roundDisplay');
+      if (rd) rd.textContent = '第 0 / 0 轮';
+      setStatus('active', '已清空');
+    });
+
+    // 吵架页面独立 API 配置
+    var debateProviderSelect = document.getElementById('debateProvider');
+    var debateApiKeyInput = document.getElementById('debateApiKey');
+    var saveDebateConfig = document.getElementById('saveDebateConfig');
+
+    configBtn.addEventListener('click', function() {
+      debateProviderSelect.value = debateProvider;
+      debateApiKeyInput.value = localStorage.getItem('debate_apikey_' + debateProvider) || '';
+      configModal.style.display = 'flex';
+    });
+
+    debateProviderSelect.addEventListener('change', function() {
+      var p = this.value;
+      debateApiKeyInput.value = localStorage.getItem('debate_apikey_' + p) || '';
+    });
+
+    saveDebateConfig.addEventListener('click', function() {
+      var newProvider = debateProviderSelect.value;
+      var newKey = debateApiKeyInput.value.trim();
+      if (!newKey) { return; }
+      // 保存当前 provider 的 key，再切换到新 provider
+      if (debateApiKey) {
+        localStorage.setItem('debate_apikey_' + debateProvider, debateApiKey);
+      }
+      debateProvider = newProvider;
+      debateApiKey = newKey;
+      localStorage.setItem('debate_provider', debateProvider);
+      localStorage.setItem('debate_apikey_' + debateProvider, debateApiKey);
+      configModal.style.display = 'none';
+      setStatus('active', 'API 已配置');
+    });
+
+    closeConfigBtn.addEventListener('click', function() {
+      configModal.style.display = 'none';
+    });
+
+    configModal.addEventListener('click', function(e) {
+      if (e.target === configModal) configModal.style.display = 'none';
+    });
+
+    // Keyboard shortcut: Enter to start
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey && !running) {
+        startDebate();
+      }
+    });
+
+    if (debateApiKey) {
+      setStatus('active', 'API 已配置');
+    } else {
+      setStatus('error', '请先配置 API Key');
+    }
+  </script>
+</body>
+</html>

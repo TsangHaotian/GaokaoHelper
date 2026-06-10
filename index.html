@@ -44,7 +44,7 @@
   </script>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23007aff'/%3E%3Ctext x='50' y='68' text-anchor='middle' fill='white' font-size='48' font-weight='700' font-family='sans-serif'%3EG%3C/text%3E%3C/svg%3E">
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23007aff'/%3E%3Ctext x='50' y='68' text-anchor='middle' fill='white' font-size='48' font-weight='700' font-family='sans-serif'%3EG%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="chat/style.css?v=0.11.0">
+  <link rel="stylesheet" href="chat/style.css?v=0.12.0">
   <link rel="manifest" href="manifest.json">
   <style>
     /* PWA splash screen */
@@ -96,7 +96,7 @@
         <div class="sidebar-brand">
           <span class="brand-logo">G</span>
           <span class="brand-text">GaokaoAI</span>
-          <span class="version-tag">v0.11.1</span>
+          <span class="version-tag" id="versionTag" style="cursor:pointer;">v0.12.0</span>
         </div>
       </div>
 
@@ -128,7 +128,7 @@
         <div class="chat-header-info">
           <h1 id="currentSkillName">请选择角色</h1>
           <p class="chat-header-subtitle" id="headerSubtitle">基于 DeepSeek V4 Flash · 角色由 SKILL 定义</p>
-          <p class="chat-header-footer-note">最后更新于 2026-05-20 · 已停止维护，Bug 或建议请反馈至 <a href="https://github.com/TsangHaotian/GaokaoHelper" target="_blank" style="color:var(--text-muted);">GitHub</a></p>
+          <p class="chat-header-footer-note">最后更新于 2026-05-20 · 趣味更新 2026-06-10（连续点击版本号有惊喜） · 已停止维护，Bug 或建议请反馈至 <a href="https://github.com/TsangHaotian/GaokaoHelper" target="_blank" style="color:var(--text-muted);">GitHub</a></p>
         </div>
         <div class="menu-wrap">
           <button class="btn btn-icon" id="menuBtn" title="更多">
@@ -199,7 +199,9 @@
     </main>
   </div>
 
-  <!-- 设置弹窗 -->
+  	  </div>
+
+	  <!-- 设置弹窗 -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal">
       <div class="modal-header">
@@ -251,6 +253,15 @@
         <div class="setting-group">
           <label class="setting-label" style="cursor:pointer;" onclick="var e=document.getElementById('changelogContent');e.style.display=e.style.display==='none'?'':'none';">📋 更新日志 <span style="font-size:11px;color:var(--text-muted);font-weight:400;">（点击展开）</span></label>
           <div id="changelogContent" style="display:none;font-size:12px;color:var(--text-secondary);line-height:1.7;margin-top:4px;padding:6px 0;">
+            <p><strong>v0.12.0</strong> — 2026-06-10<br>
+            · 新增彩蛋：连续点击版本号 5 次进入隐藏吵架页面（张雪峰 vs 平衡者）<br>
+            · 吵架页面独立部署（debate.html），不污染主程序<br>
+            · 吵架 UI 暗黑电竞风格，VS 头图实时轮次显示<br>
+            · 支持自定义吵架主题，双方满嘴脏话火力全开<br>
+            · 平衡者掌握张雪峰黑历史（巧乐兹、跑马拉松、心脏猝死）<br>
+            · 吵架页面 API 独立配置，支持 DeepSeek / GLM-4-Flash<br>
+            · 每个 provider 独立保存 API Key，切换不串<br>
+            · 状态栏显示"趣味更新 2026-06-10"提示</p>
             <p><strong>v0.11.0</strong> — 2026-05-20<br>
             · 新增数据录入页面，支持用户自行录入高考成绩、排名和省份信息<br>
             · 多目标院校管理：支持添加多所院校，每所独立管理名称、专业和往年录取数据<br>
@@ -355,6 +366,85 @@
     <p>本项目开源在 <a href="https://github.com/TsangHaotian/GaokaoHelper">GitHub</a>，欢迎贡献角色 SKILL 定义文件。</p>
   </div>
 
-  <script src="chat/app.js?v=0.11.0"></script>
+  <!-- 彩蛋弹窗 · 吵架入口 -->
+  <div id="easterEggModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:16px;padding:32px 28px;width:90%;max-width:360px;text-align:center;border:1px solid #e5393533;">
+      <div style="font-size:36px;margin-bottom:8px;">⚡</div>
+      <h3 style="color:#ef5350;font-size:16px;margin-bottom:4px;">隐藏入口</h3>
+      <p style="color:#ef5350;font-size:24px;font-weight:900;letter-spacing:2px;margin-bottom:12px;">张雪峰 vs 平衡者</p>
+      <p style="color:#888;font-size:12px;line-height:1.6;margin-bottom:20px;">即将进入隐藏吵架页面<br>双方火力全开、满嘴脏话<br>请确保已佩戴耳机</p>
+      <div style="display:flex;gap:8px;">
+        <button id="enterDebateBtn" style="flex:1;padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,#e53935,#c62828);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">🔥 进入开吵</button>
+        <button id="closeEasterBtn" style="flex:1;padding:10px;border-radius:8px;border:1px solid #333;background:transparent;color:#888;font-size:13px;cursor:pointer;">算了</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="chat/app.js?v=0.12.0"></script>
+  <script>
+    // 版本号点击 5 次彩蛋
+    (function() {
+      var versionTag = document.getElementById('versionTag');
+      var modal = document.getElementById('easterEggModal');
+      var enterBtn = document.getElementById('enterDebateBtn');
+      var closeBtn = document.getElementById('closeEasterBtn');
+      var clickCount = 0;
+      var unlocked = false;
+      var toastTimer = null;
+
+      if (!versionTag || !modal) return;
+
+      // 创建底部提示
+      var toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#ccc;padding:8px 16px;border-radius:8px;font-size:12px;z-index:99999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;';
+      document.body.appendChild(toast);
+
+      function showToast(msg) {
+        if (toastTimer) {
+          clearTimeout(toastTimer);
+          toastTimer = null;
+        }
+        // 先淡出
+        toast.style.opacity = '0';
+        // 等淡出动画完成后更新文字再淡入
+        setTimeout(function() {
+          toast.textContent = msg;
+          requestAnimationFrame(function() {
+            toast.style.opacity = '1';
+          });
+          toastTimer = setTimeout(function() {
+            toast.style.opacity = '0';
+          }, 1500);
+        }, 200);
+      }
+
+      versionTag.addEventListener('click', function(e) {
+        if (unlocked) {
+          modal.style.display = 'flex';
+          return;
+        }
+        clickCount++;
+        var remaining = 5 - clickCount;
+        if (remaining > 0) {
+          showToast('再点击 ' + remaining + ' 次进入吵架模式');
+        }
+        if (clickCount >= 5) {
+          unlocked = true;
+          modal.style.display = 'flex';
+        }
+      });
+
+      enterBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+        window.location.href = 'debate.html';
+      });
+
+      closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+      });
+
+      // 不点"算了"不会关闭，点空白处不关闭
+    })();
+  </script>
 </body>
 </html>
