@@ -3,7 +3,7 @@ const API_PROVIDERS = {
   deepseek: {
     label: 'DeepSeek',
     baseUrl: 'https://api.deepseek.com',
-    model: 'deepseek-chat',
+    model: 'deepseek-v4-flash',
     keyPrefix: 'sk-',
     isFree: false,
     desc: '在 <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a> 获取 API Key',
@@ -27,9 +27,9 @@ const API_PROVIDERS = {
     note: '需在设置中填写 MiniMax 的 group_id',
   },
   glm_free: {
-    label: 'GLM-4-Flash',
+    label: 'GLM-4.7-Flash',
     baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
-    model: 'glm-4-flash',
+    model: 'glm-4.7-flash',
     keyPrefix: '',
     isFree: true,
     desc: '完全免费！在 <a href="https://bigmodel.cn" target="_blank">bigmodel.cn</a> 注册获取 API Key（无需付费）',
@@ -427,7 +427,7 @@ var WELCOME_TEXTS = {
   'parent': '孩子啊，爸妈来了。\n你这选学校选专业的事儿，爸妈帮不上什么大忙，但有些话想跟你说说。\n你自己是怎么想的？跟爸妈唠唠？',
   'counselor': '你好呀，我是心理辅导员。\n高考完了，各种情绪涌上来了是吧？焦虑、迷茫、害怕选错——这些都很正常。\n如果你愿意，可以跟我说说你现在的心情。',
   'career': '你好，我是职业规划师。\n我不只看你眼前的分数和学校——我更关心的是：10年后你想过什么样的生活？\�有什么关于未来的想法，说说看，我们一起理一理。',
-  'data-analyst': '你好，我是数据分析师。\n我不凭感觉给建议，一切靠数据说话。\n当用户开启联网搜索时，系统会调用 GLM-4-Flash 获取最新数据提供给我分析。\n你想了解什么方向？我帮你找数据、做分析。',
+  'data-analyst': '你好，我是数据分析师。\n我不凭感觉给建议，一切靠数据说话。\n当用户开启联网搜索时，系统会调用 GLM-4.7-Flash 获取最新数据提供给我分析。\n你想了解什么方向？我帮你找数据、做分析。',
 };
 
 function addWelcomeMessage() {
@@ -956,7 +956,7 @@ function renderMessageDOM(role, content, skillLabel, isQuestioner) {
   } else if (isQuestioner === 'search') {
     div.innerHTML =
       '<div class="msg-avatar"><span class="avatar-bot" style="background:#007aff;font-size:14px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔍</span></div>' +
-      '<div class="bubble"><div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(content) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div></div>';
+      '<div class="bubble"><div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4.7-Flash</span></div>' + renderMarkdown(content) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div></div>';
   } else if (STATE.groupChatEnabled && skillLabel) {
     // Questioner
     if (isQuestioner) {
@@ -1093,7 +1093,7 @@ async function sendSingleMessage(text) {
 
     var searchDiv = document.createElement('div');
     searchDiv.className = 'message bot';
-    searchDiv.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" style="background:#007aff;font-size:14px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔍</span></div><div class="bubble"><div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div><p style="color:var(--text-muted);font-style:italic;">正在搜索...</p></div>';
+    searchDiv.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" style="background:#007aff;font-size:14px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔍</span></div><div class="bubble"><div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4.7-Flash</span></div><p style="color:var(--text-muted);font-style:italic;">正在搜索...</p></div>';
     messagesEl.appendChild(searchDiv);
     scrollToBottom();
 
@@ -1104,7 +1104,7 @@ async function sendSingleMessage(text) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + glmKey },
           body: JSON.stringify({
-            model: 'glm-4-flash',
+            model: 'glm-4.7-flash',
             messages: [{ role: 'user', content: text }],
             stream: true,
             tools: [{type: 'web_search', web_search: {search_query: text}}],
@@ -1133,25 +1133,25 @@ async function sendSingleMessage(text) {
                 var delta = parsed.choices && parsed.choices[0] && parsed.choices[0].delta ? (parsed.choices[0].delta.content || '') : '';
                 if (delta) {
                   searchContent += delta;
-                  if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div>';
+                  if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4.7-Flash</span></div>' + renderMarkdown(searchContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div>';
                   scrollToBottom();
                 }
               } catch (e) { /* skip */ }
             }
           }
           searchResults = searchContent;
-          if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div><div style="margin-top:8px;padding-top:6px;border-top:0.5px solid var(--border);font-size:11px;color:var(--text-muted);line-height:1.4;">💡 如果不需要联网搜索，请关闭输入框下方的联网按钮，可减少等待时间，提升对话流畅度。</div>';
+          if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4.7-Flash</span></div>' + renderMarkdown(searchContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div><div style="margin-top:8px;padding-top:6px;border-top:0.5px solid var(--border);font-size:11px;color:var(--text-muted);line-height:1.4;">💡 如果不需要联网搜索，请关闭输入框下方的联网按钮，可减少等待时间，提升对话流畅度。</div>';
           console.log('[webSearch] 搜索结果:', searchResults);
         } else {
           var srErr = await sr.json().catch(function() { return {}; });
-          searchDiv.querySelector('.bubble').innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div><p style="color:#ff6b81;font-style:italic;">搜索失败：' + (srErr.error ? srErr.error.message : 'HTTP ' + sr.status) + '</p>';
+          searchDiv.querySelector('.bubble').innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4.7-Flash</span></div><p style="color:#ff6b81;font-style:italic;">搜索失败：' + (srErr.error ? srErr.error.message : 'HTTP ' + sr.status) + '</p>';
         }
       } catch (e) {
         if (e.name === 'AbortError') throw e;
-        searchDiv.querySelector('.bubble').innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div><p style="color:#ff6b81;font-style:italic;">搜索请求失败</p>';
+        searchDiv.querySelector('.bubble').innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4.7-Flash</span></div><p style="color:#ff6b81;font-style:italic;">搜索请求失败</p>';
       }
     } else {
-      searchDiv.querySelector('.bubble').innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div><p style="color:#ff6b81;font-style:italic;">未配置 GLM API Key</p>';
+      searchDiv.querySelector('.bubble').innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4.7-Flash</span></div><p style="color:#ff6b81;font-style:italic;">未配置 GLM API Key</p>';
     }
   }
 
@@ -1167,8 +1167,8 @@ async function sendSingleMessage(text) {
     messages: [
       ...dataSystemMsg,
       ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
-      ...(searchResults ? [{ role: 'system', content: '【AI 规则 - 已开启联网搜索】\n1. 你本身不具备联网能力，以下信息是系统调用 GLM-4-Flash 联网搜索 API 获取到的。\n2. 请仔细阅读搜索结果，确保回答与用户问题一致。\n3. 如果搜索结果与用户问题不匹配（可能因关键词问题导致），不要直接附和，应告知用户注意。\n4. 基于搜索结果回答即可，不需要扮演有联网能力的角色。\n\n【搜索结果】\n' + searchResults }] : []),
-      ...(STATE.webSearch && !searchResults ? [{ role: 'system', content: '【AI 规则 - 联网搜索无结果】\n已调用 GLM-4-Flash 联网搜索 API 但未获取到有效结果，请如实告知用户搜索不到相关信息，不要自行编造。' }] : []),
+      ...(searchResults ? [{ role: 'system', content: '【AI 规则 - 已开启联网搜索】\n1. 你本身不具备联网能力，以下信息是系统调用 GLM-4.7-Flash 联网搜索 API 获取到的。\n2. 请仔细阅读搜索结果，确保回答与用户问题一致。\n3. 如果搜索结果与用户问题不匹配（可能因关键词问题导致），不要直接附和，应告知用户注意。\n4. 基于搜索结果回答即可，不需要扮演有联网能力的角色。\n\n【搜索结果】\n' + searchResults }] : []),
+      ...(STATE.webSearch && !searchResults ? [{ role: 'system', content: '【AI 规则 - 联网搜索无结果】\n已调用 GLM-4.7-Flash 联网搜索 API 但未获取到有效结果，请如实告知用户搜索不到相关信息，不要自行编造。' }] : []),
       ...(!STATE.webSearch ? [{ role: 'system', content: '【AI 规则 - 未开启联网搜索】\n1. 你只能基于自身训练知识回答。\n2. 对于大学录取分数线、各省录取分数线等具体数据，必须声明"此为本人知识范围内的信息，建议开启联网搜索获取最新数据"。\n3. 严禁编造任何大学录取数据或省份录取分数线。\n4. 对于不确定的信息，如实告知用户。' }] : []),
       ...STATE.messages,
     ],
@@ -1253,7 +1253,7 @@ async function sendGroupMessage(text) {
     var glmKey = localStorage.getItem('api_key_glm_free');
     var searchDiv = document.createElement('div');
     searchDiv.className = 'message bot';
-    searchDiv.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" style="background:#007aff;font-size:14px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔍</span></div><div class="bubble"><div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div><p style="color:var(--text-muted);font-style:italic;">正在搜索...</p></div>';
+    searchDiv.innerHTML = '<div class="msg-avatar"><span class="avatar-bot" style="background:#007aff;font-size:14px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔍</span></div><div class="bubble"><div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4.7-Flash</span></div><p style="color:var(--text-muted);font-style:italic;">正在搜索...</p></div>';
     messagesEl.appendChild(searchDiv);
     scrollToBottom();
     if (glmKey) {
@@ -1262,7 +1262,7 @@ async function sendGroupMessage(text) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + glmKey },
           body: JSON.stringify({
-            model: 'glm-4-flash',
+            model: 'glm-4.7-flash',
             messages: [{ role: 'user', content: text }],
             stream: true,
             tools: [{type: 'web_search', web_search: {search_query: text}}],
@@ -1291,21 +1291,21 @@ async function sendGroupMessage(text) {
                 var delta = parsed.choices && parsed.choices[0] && parsed.choices[0].delta ? (parsed.choices[0].delta.content || '') : '';
                 if (delta) {
                   searchContent += delta;
-                  if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div>';
+                  if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4.7-Flash</span></div>' + renderMarkdown(searchContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div>';
                   scrollToBottom();
                 }
               } catch (e) { /* skip */ }
             }
           }
           searchResults = searchContent;
-          if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div>' + renderMarkdown(searchContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div><div style="margin-top:8px;padding-top:6px;border-top:0.5px solid var(--border);font-size:11px;color:var(--text-muted);line-height:1.4;">💡 如果不需要联网搜索，请关闭输入框下方的联网按钮，可减少等待时间，提升对话流畅度。</div>';
+          if (bubbleEl) bubbleEl.innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4.7-Flash</span></div>' + renderMarkdown(searchContent) + '<div class="bubble-ai-tag">回复由 AI 生成，各省份数据可能存在差异，请以官方文件为准，务必自行核对</div><div style="margin-top:8px;padding-top:6px;border-top:0.5px solid var(--border);font-size:11px;color:var(--text-muted);line-height:1.4;">💡 如果不需要联网搜索，请关闭输入框下方的联网按钮，可减少等待时间，提升对话流畅度。</div>';
         }
       } catch (e) {
         if (e.name === 'AbortError') throw e;
-        searchDiv.querySelector('.bubble').innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div><p style="color:#ff6b81;font-style:italic;">搜索请求失败</p>';
+        searchDiv.querySelector('.bubble').innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4.7-Flash</span></div><p style="color:#ff6b81;font-style:italic;">搜索请求失败</p>';
       }
     } else {
-      searchDiv.querySelector('.bubble').innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4-Flash</span></div><p style="color:#ff6b81;font-style:italic;">未配置 GLM API Key</p>';
+      searchDiv.querySelector('.bubble').innerHTML = '<div class="bubble-skill-label" style="color:#007aff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">联网小助手<span style="font-size:10px;color:#999;font-weight:400;">免费·GLM-4.7-Flash</span></div><p style="color:#ff6b81;font-style:italic;">未配置 GLM API Key</p>';
     }
   }
 
