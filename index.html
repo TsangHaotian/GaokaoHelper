@@ -88,7 +88,7 @@
   </style>
 </head>
 <body>
-  <div id="loader-bar"><div class="bar" style="width:10%"></div><div class="text">GaokaoAI v0.11.1 — 加载角色中...</div></div>
+  <div id="loader-bar"><div class="bar" style="width:10%"></div><div class="text">GaokaoAI v0.13.0 — 加载角色中...</div></div>
   <div class="app">
     <!-- 侧栏 - 角色列表 -->
     <aside class="sidebar">
@@ -96,7 +96,7 @@
         <div class="sidebar-brand">
           <span class="brand-logo">G</span>
           <span class="brand-text">GaokaoAI</span>
-          <span class="version-tag" id="versionTag" style="cursor:pointer;">v0.12.0</span>
+          <span class="version-tag" id="versionTag" style="cursor:pointer;">v0.13.0</span>
         </div>
       </div>
 
@@ -128,7 +128,7 @@
         <div class="chat-header-info">
           <h1 id="currentSkillName">请选择角色</h1>
           <p class="chat-header-subtitle" id="headerSubtitle">基于 DeepSeek V4 Flash · 角色由 SKILL 定义</p>
-          <p class="chat-header-footer-note">最后更新于 2026-05-20 · 趣味更新 2026-06-10（连续点击版本号有惊喜） · 已停止维护，Bug 或建议请反馈至 <a href="https://github.com/TsangHaotian/GaokaoHelper" target="_blank" style="color:var(--text-muted);">GitHub</a></p>
+          <p class="chat-header-footer-note">最后更新于 2026-08-28（连续点击版本号有惊喜） · Bug 或建议请反馈至 <a href="https://github.com/TsangHaotian/GaokaoHelper" target="_blank" style="color:var(--text-muted);">GitHub</a></p>
         </div>
         <div class="menu-wrap">
           <button class="btn btn-icon" id="menuBtn" title="更多">
@@ -214,12 +214,12 @@
           <p class="setting-desc">选择你要使用的 API 提供商</p>
           <div class="setting-input-row">
             <select class="api-input" id="apiProviderSelect">
-              <option value="deepseek">🥇 DeepSeek（V4 Flash · 低费用 · 推荐）</option>
-              <option value="moonshot">🥈 Moonshot 月之暗面（kimi-k2.5 · 中费用）</option>
+              <option value="deepseek">🥇 DeepSeek（V4 Flash · 错峰低价 · 推荐）</option>
+              <option value="moonshot">🥈 Moonshot 月之暗面（kimi-k2.5 · 高费用）</option>
               <option value="minimax">🥉 MiniMax（M2 · 低费用）</option>
               <option value="glm47">🆓 GLM-4.7-Flash（完全免费 · 响应较慢）</option>
             </select>
-            <p style="font-size:12px;color:var(--text-muted);margin-top:6px;line-height:1.4;">💡 不同模型能力有差距：DeepSeek 效果最好但需付费；GLM 系列完全免费但参数量小、效果较弱。如果不确定，建议先选 DeepSeek。免费模型够用，但别指望跟付费模型效果一样好。</p>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:6px;line-height:1.4;">💡 省钱提示：GLM 完全免费随便用；DeepSeek 采用峰谷计价，工作日 9-12 点 / 14-18 点是高峰价，晚上、中午和周末全天半价，错峰使用最划算；MiniMax M2 全天统一低价；Kimi 能力最强但最贵，建议留给难题。</p>
           </div>
         </div>
         <div class="setting-group">
@@ -252,6 +252,14 @@
         <div class="setting-group">
           <label class="setting-label" style="cursor:pointer;" onclick="var e=document.getElementById('changelogContent');e.style.display=e.style.display==='none'?'':'none';">📋 更新日志 <span style="font-size:11px;color:var(--text-muted);font-weight:400;">（点击展开）</span></label>
           <div id="changelogContent" style="display:none;font-size:12px;color:var(--text-secondary);line-height:1.7;margin-top:4px;padding:6px 0;">
+            <p><strong>v0.13.0</strong> — 2026-08-28<br>
+            · 模型全面换代：deepseek-chat → V4-Flash（旧名已被官方下线）<br>
+            · GLM-4-Flash → GLM-4.7-Flash（免费线升级，200K 上下文）<br>
+            · moonshot-v1-128k → kimi-k2.5（更便宜更强的旗舰，256K 上下文）<br>
+            · M2-her → MiniMax-M2（角色扮演模型换通用旗舰，价格不变）<br>
+            · 费用标注同步 DeepSeek 峰谷计价新规：错峰/周末半价，Kimi 调整为高费用档<br>
+            · 修复 Service Worker 缓存优先导致一直运行旧代码的问题，改为网络优先<br>
+            · 移除设置中与 GLM-4.7 重复的免费选项</p>
             <p><strong>v0.12.0</strong> — 2026-06-10<br>
             · 新增彩蛋：连续点击版本号 5 次进入隐藏吵架页面（张雪峰 vs 平衡者）<br>
             · 吵架页面独立部署（debate.html），不污染主程序<br>
