@@ -11,7 +11,7 @@ const API_PROVIDERS = {
   moonshot: {
     label: 'Moonshot 月之暗面',
     baseUrl: 'https://api.moonshot.cn/v1',
-    model: 'moonshot-v1-128k',
+    model: 'kimi-k2.5',
     keyPrefix: 'sk-',
     isFree: false,
     desc: '在 <a href="https://platform.moonshot.cn/console" target="_blank">platform.moonshot.cn</a> 获取 API Key',
@@ -19,7 +19,7 @@ const API_PROVIDERS = {
   minimax: {
     label: 'MiniMax',
     baseUrl: 'https://api.minimaxi.com/v1',
-    model: 'M2-her',
+    model: 'MiniMax-M2',
     maxTokens: 2048,
     keyPrefix: 'sk-',
     isFree: false,
